@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>The Cubicle — Britain's Pub Toilet Reviews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --black:  #08080a;
+  --dark:   #0f0f12;
+  --card:   #13131a;
+  --border: rgba(255,255,255,0.07);
+  --gold:   #c9a84c;
+  --gold2:  #f0d080;
+  --gold3:  #7a5c18;
+  --cream:  #f5f0e6;
+  --dim:    rgba(255,255,255,0.75);
+  --dimmer: rgba(255,255,255,0.5);
+  --green:  #4a9e5c;
+  --red:    #c05050;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { background: var(--black); color: var(--cream); font-family: 'Montserrat', sans-serif; min-height: 100vh; overflow-x: hidden; }
+body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 999; opacity: 0.028; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+body::before { content: ''; position: fixed; top: -20%; left: 50%; transform: translateX(-50%); width: 70vw; height: 50vh; background: radial-gradient(ellipse, rgba(201,168,76,0.06) 0%, transparent 70%); pointer-events: none; z-index: 0; }
+
+#app { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding-bottom: 90px; }
+
+/* HEADER */
+header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; background: rgba(8,8,10,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.logo-title { font-family: 'Cormorant Garamond', serif; font-size: 38px; font-weight: 300; color: var(--cream); letter-spacing: 0.08em; line-height: 1; font-style: italic; }
+.logo-title span { color: var(--gold); font-style: normal; font-weight: 600; }
+.city-pill { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(201,168,76,0.3); background: rgba(201,168,76,0.06); }
+.city-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: blink 2s ease-in-out infinite; }
+.city-name { font-size: 10px; font-weight: 600; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.nav-tabs { display: flex; }
+.nav-tab { flex: 1; padding: 12px 4px; text-align: center; font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dimmer); border-bottom: 1px solid transparent; cursor: pointer; transition: all 0.25s; background: none; border-top: none; border-left: none; border-right: none; font-family: 'Montserrat', sans-serif; }
+.nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* SCREENS */
+.screen { display: none; padding: 24px 16px; }
+.screen.active { display: block; }
+.s-eyebrow { font-size: 9px; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; font-weight: 500; margin-bottom: 6px; }
+.s-title { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 300; font-style: italic; color: var(--cream); letter-spacing: 0.04em; margin-bottom: 20px; }
+
+/* LOADING */
+.loading { text-align: center; padding: 40px 20px; }
+.loading-spinner { width: 32px; height: 32px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading p { font-size: 11px; color: var(--dimmer); letter-spacing: 0.1em; }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 48px 20px; }
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.3; }
+.empty-state p { font-size: 13px; color: var(--dimmer); line-height: 1.6; }
+
+/* HERO CARD */
+.hero-card { background: var(--card); border: 1px solid rgba(201,168,76,0.25); border-radius: 16px; overflow: hidden; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s; position: relative; }
+.hero-card:active { transform: scale(0.985); }
+.hero-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+.hero-crown { padding: 16px 20px 0; display: flex; justify-content: space-between; align-items: flex-start; }
+.crown-badge { display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.05)); border: 1px solid rgba(201,168,76,0.3); border-radius: 4px; padding: 5px 10px; }
+.crown-icon { font-size: 14px; }
+.crown-label { font-size: 9px; letter-spacing: 0.2em; color: var(--gold); font-weight: 600; text-transform: uppercase; }
+.hero-score { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 600; color: var(--gold2); line-height: 1; }
+.hero-score sup { font-size: 18px; color: var(--dim); font-weight: 300; }
+.hero-body { padding: 12px 20px 20px; }
+.hero-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 400; color: var(--cream); margin-bottom: 2px; }
+.hero-street { font-size: 11px; color: var(--dimmer); letter-spacing: 0.08em; margin-bottom: 12px; }
+.hero-features { display: flex; flex-wrap: wrap; gap: 6px; }
+.feat-chip { display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; }
+.feat-chip.yes { background: rgba(74,158,92,0.12); border: 1px solid rgba(74,158,92,0.25); color: #7ac88a; }
+.feat-chip.no  { background: rgba(192,80,80,0.1);  border: 1px solid rgba(192,80,80,0.2);  color: #e08080; }
+
+/* PUB LIST */
+.pub-list { display: flex; flex-direction: column; gap: 8px; }
+.pub-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; gap: 14px; align-items: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+.pub-card::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; border-radius: 2px 0 0 2px; }
+.pub-card.excellent::after { background: var(--green); }
+.pub-card.good::after      { background: var(--gold); }
+.pub-card.decent::after    { background: #666; }
+.pub-card.avoid::after     { background: var(--red); }
+.pub-card:active { transform: scale(0.98); }
+.pub-rank { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: rgba(255,255,255,0.12); min-width: 32px; text-align: center; line-height: 1; }
+.pub-info { flex: 1; min-width: 0; }
+.pub-name { font-size: 14px; font-weight: 600; color: var(--cream); margin-bottom: 2px; }
+.pub-street { font-size: 10px; color: var(--dimmer); letter-spacing: 0.06em; margin-bottom: 8px; }
+.pub-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font-size: 9px; font-weight: 600; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 3px; text-transform: uppercase; }
+.chip.yes { background: rgba(74,158,92,0.12); color: #7ac88a; border: 1px solid rgba(74,158,92,0.2); }
+.chip.no  { background: rgba(192,80,80,0.1);  color: #e08080; border: 1px solid rgba(192,80,80,0.15); }
+.chip.meh { background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.08); }
+.pub-right { text-align: right; }
+.pub-score { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 600; line-height: 1; }
+.pub-score.s-excellent { color: #6acf7e; }
+.pub-score.s-good      { color: var(--gold2); }
+.pub-score.s-decent    { color: rgba(255,255,255,0.55); }
+.pub-score.s-avoid     { color: #e07070; }
+.pub-score-den { font-size: 9px; color: rgba(255,255,255,0.45); }
+.pub-reviews { font-size: 9px; color: rgba(255,255,255,0.35); margin-top: 3px; }
+
+/* SEARCH */
+.search-wrap { position: relative; margin-bottom: 20px; }
+.search-input { width: 100%; padding: 13px 16px 13px 44px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--cream); font-family: 'Montserrat', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
+.search-input::placeholder { color: rgba(255,255,255,0.2); }
+.search-input:focus { border-color: rgba(201,168,76,0.3); }
+.search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 15px; opacity: 0.25; }
+
+/* GOLD DIVIDER */
+.gold-line { width: 40px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 0 auto 20px; }
+
+/* DETAIL SCREEN */
+#detail-screen { display: none; position: fixed; inset: 0; z-index: 200; background: var(--black); overflow-y: auto; }
+.detail-header { padding: 20px 16px 16px; background: rgba(8,8,10,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 14px; }
+.back-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--card); border: 1px solid var(--border); color: var(--cream); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.detail-pub-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; font-style: italic; color: var(--cream); flex: 1; }
+.detail-body { padding: 20px 16px; }
+.d-score-hero { border-radius: 16px; padding: 24px; margin-bottom: 16px; position: relative; overflow: hidden; background: var(--card); border: 1px solid rgba(201,168,76,0.15); }
+.d-score-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 0% 0%, rgba(201,168,76,0.08) 0%, transparent 60%); }
+.d-score-row { display: flex; align-items: flex-end; gap: 16px; position: relative; }
+.d-score-num { font-family: 'Cormorant Garamond', serif; font-size: 80px; font-weight: 600; line-height: 1; }
+.d-score-num.s-excellent { color: #6acf7e; }
+.d-score-num.s-good      { color: var(--gold2); }
+.d-score-num.s-decent    { color: rgba(255,255,255,0.55); }
+.d-score-num.s-avoid     { color: #e07070; }
+.d-verdict { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: var(--cream); }
+.d-tagline { font-size: 12px; color: var(--dim); margin-top: 4px; line-height: 1.5; font-style: italic; }
+.d-addr { font-size: 10px; color: rgba(255,255,255,0.35); margin-top: 8px; letter-spacing: 0.1em; text-transform: uppercase; }
+.d-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
+.d-card-title { font-size: 9px; letter-spacing: 0.25em; color: var(--gold); text-transform: uppercase; font-weight: 600; margin-bottom: 16px; }
+.d-rating-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.d-rating-row:last-child { margin-bottom: 0; }
+.d-rating-label { font-size: 12px; font-weight: 500; width: 130px; flex-shrink: 0; color: var(--dim); }
+.d-bar-wrap { flex: 1; background: rgba(255,255,255,0.05); border-radius: 2px; height: 3px; }
+.d-bar { height: 100%; border-radius: 2px; transition: width 1s ease; }
+.d-rating-icon { font-size: 14px; width: 20px; text-align: center; }
+.d-photo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.d-photo-slot { aspect-ratio: 4/3; border-radius: 8px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+.d-photo-slot img { width: 100%; height: 100%; object-fit: cover; }
+.d-photo-slot.empty { background: rgba(255,255,255,0.03); font-size: 24px; gap: 6px; }
+.d-photo-label { font-size: 9px; color: rgba(255,255,255,0.35); letter-spacing: 0.1em; text-transform: uppercase; }
+.d-review { padding: 14px 0; border-bottom: 1px solid var(--border); }
+.d-review:last-child { border-bottom: none; }
+.d-review-meta { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.d-review-author { font-size: 11px; font-weight: 600; color: var(--cream); letter-spacing: 0.06em; }
+.d-review-date { font-size: 10px; color: rgba(255,255,255,0.35); }
+.d-review-text { font-family: 'Cormorant Garamond', serif; font-size: 15px; color: var(--dim); line-height: 1.6; font-style: italic; }
+.d-add-btn { width: 100%; padding: 16px; background: transparent; border: 1px solid rgba(201,168,76,0.3); border-radius: 10px; color: var(--gold); font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; }
+.d-add-btn:active { background: rgba(201,168,76,0.08); }
+
+/* NEARBY */
+.nearby-hero { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 20px; text-align: center; }
+.nearby-hero p { font-size: 13px; color: var(--dim); line-height: 1.7; margin-bottom: 16px; }
+.nearby-hero strong { color: var(--gold2); }
+.locate-btn { padding: 14px 32px; background: linear-gradient(135deg, var(--gold), var(--gold3)); color: var(--black); border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; }
+
+/* SUBMIT */
+.submit-form { display: flex; flex-direction: column; gap: 14px; }
+.f-group { display: flex; flex-direction: column; gap: 8px; }
+.f-label { font-size: 9px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
+.f-input { padding: 13px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--cream); font-family: 'Montserrat', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
+.f-input::placeholder { color: rgba(255,255,255,0.2); }
+.f-input:focus { border-color: rgba(201,168,76,0.35); }
+.f-textarea { resize: none; }
+.poop-rater { display: flex; gap: 10px; }
+.poop-btn { font-size: 30px; background: none; border: none; cursor: pointer; opacity: 0.2; transition: all 0.15s; padding: 4px; filter: grayscale(1); }
+.poop-btn.active { opacity: 1; filter: none; transform: scale(1.15); }
+.toggle-section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.t-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.t-row:last-child { border-bottom: none; }
+.t-label { font-size: 13px; font-weight: 500; color: var(--dim); }
+.t-switch { width: 42px; height: 22px; background: rgba(255,255,255,0.08); border-radius: 11px; position: relative; cursor: pointer; transition: background 0.25s; border: none; flex-shrink: 0; }
+.t-switch.on { background: var(--green); }
+.t-switch::after { content: ''; position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: left 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+.t-switch.on::after { left: 23px; }
+.photo-grid-upload { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.photo-slot-upload { aspect-ratio: 1; background: var(--card); border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; gap: 6px; transition: all 0.2s; position: relative; overflow: hidden; }
+.photo-slot-upload:active { border-color: var(--gold); }
+.photo-slot-upload .ps-icon { font-size: 24px; opacity: 0.3; }
+.photo-slot-upload .ps-label { font-size: 9px; color: rgba(255,255,255,0.35); letter-spacing: 0.1em; text-transform: uppercase; text-align: center; line-height: 1.5; }
+.photo-slot-upload img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 9px; }
+.photo-slot-upload input { display: none; }
+.submit-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--gold), var(--gold3)); color: var(--black); border: none; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s; }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: var(--card); color: var(--cream); padding: 12px 20px; border-radius: 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.06em; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; border: 1px solid var(--border); border-left: 2px solid var(--gold); }
+.toast.show { opacity: 1; }
+
+/* BOTTOM NAV */
+.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; z-index: 100; background: rgba(8,8,10,0.95); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; }
+.bnav { flex: 1; padding: 10px 4px 18px; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; }
+.bnav-icon { font-size: 18px; opacity: 0.25; transition: all 0.2s; }
+.bnav-label { font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.25); font-weight: 600; transition: all 0.2s; }
+.bnav.active .bnav-icon { opacity: 1; }
+.bnav.active .bnav-label { color: var(--gold); }
+
+/* SETUP BANNER */
+.setup-banner { background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.25); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
+.setup-banner p { font-size: 11px; color: var(--gold); line-height: 1.6; }
+.setup-banner code { background: rgba(201,168,76,0.15); padding: 1px 5px; border-radius: 3px; font-size: 10px; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.pub-card, .hero-card { animation: fadeUp 0.3s ease both; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="header-top">
+      <div class="logo-title">The <span>Cubicle</span></div>
+      <div class="city-pill">
+        <div class="city-dot"></div>
+        <div class="city-name" id="city-label">York</div>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('top')">Top</button>
+      <button class="nav-tab" onclick="switchTab('nearby')">Nearby</button>
+      <button class="nav-tab" onclick="switchTab('submit')">Submit</button>
+    </div>
+  </header>
+
+  <!-- TOP -->
+  <div id="screen-top" class="screen active">
+    <div class="s-eyebrow">The Cubicle</div>
+    <div class="s-title">Britain's Pub Toilet Reviews</div>
+    <div id="hero-wrap"></div>
+    <div class="gold-line"></div>
+    <div class="search-wrap">
+      <span class="search-icon">◎</span>
+      <input class="search-input" id="search-input" placeholder="Search pub or street..." oninput="filterPubs()">
+    </div>
+    <div id="top-loading" class="loading"><div class="loading-spinner"></div><p>Loading York's finest...</p></div>
+    <div class="pub-list" id="pub-list"></div>
+  </div>
+
+  <!-- NEARBY -->
+  <div id="screen-nearby" class="screen">
+    <div class="s-eyebrow">Location</div>
+    <div class="s-title">Near You</div>
+    <div class="nearby-hero" id="nearby-hero">
+      <p>Share your location and we'll show the <strong>nearest rated cubicles</strong>, sorted by distance and quality.</p>
+      <button class="locate-btn" onclick="locateMe()">Locate Me</button>
+    </div>
+    <div class="pub-list" id="nearby-list"></div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div id="screen-submit" class="screen">
+    <div class="s-eyebrow">Community</div>
+    <div class="s-title">Rate a Cubicle</div>
+    <div class="submit-form">
+      <div class="f-group">
+        <div class="f-label">Pub Name *</div>
+        <input class="f-input" id="f-pub" placeholder="The Lamb & Lion">
+      </div>
+      <div class="f-group">
+        <div class="f-label">Street *</div>
+        <input class="f-input" id="f-street" placeholder="High Petergate">
+      </div>
+      <div class="f-group">
+        <div class="f-label">City *</div>
+        <input class="f-input" id="f-city" placeholder="York" value="York">
+      </div>
+      <div class="f-group">
+        <div class="f-label">Overall Score *</div>
+        <div class="poop-rater">
+          <button class="poop-btn" onclick="setScore(1)">💩</button>
+          <button class="poop-btn" onclick="setScore(2)">💩</button>
+          <button class="poop-btn" onclick="setScore(3)">💩</button>
+          <button class="poop-btn" onclick="setScore(4)">💩</button>
+          <button class="poop-btn" onclick="setScore(5)">💩</button>
+        </div>
+      </div>
+      <div class="f-group">
+        <div class="f-label">The Details</div>
+        <div class="toggle-section">
+          <div class="t-row"><span class="t-label">🚪 Full length door</span><button class="t-switch" id="t-door" onclick="tog('t-door')"></button></div>
+          <div class="t-row"><span class="t-label">🔒 Lock works</span><button class="t-switch" id="t-lock" onclick="tog('t-lock')"></button></div>
+          <div class="t-row"><span class="t-label">📱 Shelf for phone/drink</span><button class="t-switch" id="t-shelf" onclick="tog('t-shelf')"></button></div>
+          <div class="t-row"><span class="t-label">🧻 Paper stocked</span><button class="t-switch" id="t-paper" onclick="tog('t-paper')"></button></div>
+          <div class="t-row"><span class="t-label">🪝 Hook on door</span><button class="t-switch" id="t-hook" onclick="tog('t-hook')"></button></div>
+          <div class="t-row"><span class="t-label">✨ Clean enough</span><button class="t-switch" id="t-clean" onclick="tog('t-clean')"></button></div>
+        </div>
+      </div>
+      <div class="f-group">
+        <div class="f-label">Your Verdict</div>
+        <textarea class="f-input f-textarea" id="f-review" rows="3" placeholder="Tell people what to expect. Honest is fine. Brutal is also fine."></textarea>
+      </div>
+      <div class="f-group">
+        <div class="f-label">Photos (tap to add)</div>
+        <div class="photo-grid-upload">
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-door')">
+            <div class="ps-icon">🚪</div><div class="ps-label">The door</div>
+            <input type="file" id="photo-door" accept="image/*" capture="environment" onchange="previewPhoto(this)">
+          </div>
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-lock')">
+            <div class="ps-icon">🔒</div><div class="ps-label">The lock</div>
+            <input type="file" id="photo-lock" accept="image/*" capture="environment" onchange="previewPhoto(this)">
+          </div>
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-shelf')">
+            <div class="ps-icon">📱</div><div class="ps-label">The shelf</div>
+            <input type="file" id="photo-shelf" accept="image/*" capture="environment" onchange="previewPhoto(this)">
+          </div>
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-vibe')">
+            <div class="ps-icon">🚽</div><div class="ps-label">The vibe</div>
+            <input type="file" id="photo-vibe" accept="image/*" capture="environment" onchange="previewPhoto(this)">
+          </div>
+        </div>
+      </div>
+      <button class="submit-btn" id="submit-btn" onclick="submitRating()">Submit Rating</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div id="detail-screen">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">←</button>
+    <div class="detail-pub-name" id="d-name"></div>
+  </div>
+  <div class="detail-body">
+    <div class="d-score-hero">
+      <div class="d-score-row">
+        <div id="d-score" class="d-score-num"></div>
+        <div>
+          <div id="d-verdict" class="d-verdict"></div>
+          <div id="d-tagline" class="d-tagline"></div>
+          <div id="d-addr" class="d-addr"></div>
+        </div>
+      </div>
+    </div>
+    <div class="d-card"><div class="d-card-title">Breakdown</div><div id="d-ratings"></div></div>
+    <div class="d-card"><div class="d-card-title">Photographic Evidence</div><div class="d-photo-grid" id="d-photos"></div></div>
+    <div class="d-card"><div class="d-card-title">Field Reports</div><div id="d-reviews"></div></div>
+    <button class="d-add-btn" onclick="closeDetail();switchTab('submit')">+ Submit Your Rating</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="bottom-nav">
+  <button class="bnav active" id="bnav-top" onclick="switchTab('top')"><span class="bnav-icon">✦</span><span class="bnav-label">Top</span></button>
+  <button class="bnav" id="bnav-nearby" onclick="switchTab('nearby')"><span class="bnav-icon">◎</span><span class="bnav-label">Nearby</span></button>
+  <button class="bnav" id="bnav-submit" onclick="switchTab('submit')"><span class="bnav-icon">+</span><span class="bnav-label">Submit</span></button>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// 🔧 SUPABASE CONFIG — ADD YOUR DETAILS HERE
+// Step 1: Go to supabase.com → New Project
+// Step 2: Settings → API → copy Project URL and anon key
+// Step 3: Paste them below
+// ══════════════════════════════════════════════════════
+const SUPABASE_URL  = 'https://vmvkxwkwkrzbiozublis.supabase.co'
+const SUPABASE_KEY  = 'sb_publishable_n4I5_r4CjLvjgwRLR9Vdog_uthKvzof'
+// ══════════════════════════════════════════════════════
+
+// ── SUPABASE SQL TO RUN IN YOUR DASHBOARD ─────────────────────────────────
+// Go to Supabase → SQL Editor → paste and run this:
+//
+// create table pubs (
+//   id uuid default gen_random_uuid() primary key,
+//   name text not null,
+//   street text,
+//   city text default 'York',
+//   score numeric(3,1),
+//   tier text,
+//   door boolean default false,
+//   lock boolean default false,
+//   shelf boolean default false,
+//   paper boolean default false,
+//   hook boolean default false,
+//   clean boolean default false,
+//   tagline text,
+//   review_count int default 0,
+//   created_at timestamptz default now()
+// );
+//
+// create table ratings (
+//   id uuid default gen_random_uuid() primary key,
+//   pub_id uuid references pubs(id),
+//   pub_name text,
+//   street text,
+//   city text,
+//   score numeric(3,1),
+//   door boolean, lock boolean, shelf boolean,
+//   paper boolean, hook boolean, clean boolean,
+//   review text,
+//   photo_door text, photo_lock text,
+//   photo_shelf text, photo_vibe text,
+//   created_at timestamptz default now()
+// );
+//
+// -- Allow public read + insert (for demo — tighten up later)
+// alter table pubs enable row level security;
+// alter table ratings enable row level security;
+// create policy "Public read pubs" on pubs for select using (true);
+// create policy "Public insert ratings" on ratings for insert with check (true);
+// create policy "Public read ratings" on ratings for select using (true);
+// ──────────────────────────────────────────────────────────────────────────
+
+// ── FALLBACK DATA (shown when Supabase not yet connected) ─────────────────
+const FALLBACK_PUBS = [
+  { id:'1', name:"The Lamb & Lion", street:"High Petergate", city:"York", score:9.2, tier:"excellent", door:true, lock:true, shelf:true, paper:true, hook:true, clean:true, tagline:"York's undisputed throne room.", review_count:8 },
+  { id:'2', name:"The Golden Fleece", street:"Pavement", city:"York", score:8.7, tier:"excellent", door:true, lock:true, shelf:true, paper:true, hook:false, clean:true, tagline:"Almost perfect. Even the ghosts respect it.", review_count:5 },
+  { id:'3', name:"The House of the Trembling Madness", street:"Stonegate", city:"York", score:8.4, tier:"excellent", door:true, lock:true, shelf:false, paper:true, hook:true, clean:true, tagline:"The name's chaotic. The toilets aren't.", review_count:3 },
+  { id:'4', name:"The Blue Bell", street:"Fossgate", city:"York", score:8.1, tier:"excellent", door:true, lock:true, shelf:true, paper:true, hook:false, clean:true, tagline:"Small pub. Big cubicle energy.", review_count:4 },
+  { id:'5', name:"The York Tap", street:"Station Road", city:"York", score:7.8, tier:"good", door:true, lock:true, shelf:false, paper:true, hook:false, clean:true, tagline:"Train to catch? At least you can go in peace first.", review_count:6 },
+  { id:'6', name:"Brew York Tap Room", street:"Walmgate", city:"York", score:7.5, tier:"good", door:true, lock:true, shelf:true, paper:true, hook:false, clean:false, tagline:"Great beer. Toilets nearly as good.", review_count:2 },
+  { id:'7', name:"The Slip Inn", street:"St George's Place", city:"York", score:6.8, tier:"decent", door:false, lock:true, shelf:false, paper:true, hook:true, clean:true, tagline:"The door tries its best. It's not quite enough.", review_count:3 },
+  { id:'8', name:"The Rook & Gaskill", street:"Lawrence Street", city:"York", score:6.5, tier:"decent", door:true, lock:false, shelf:false, paper:true, hook:false, clean:true, tagline:"The lock is more of a suggestion.", review_count:2 },
+  { id:'9', name:"The Waggon & Horses", street:"Gillygate", city:"York", score:5.9, tier:"decent", door:false, lock:true, shelf:false, paper:false, hook:false, clean:true, tagline:"Fine if you bring your own paper. And dignity.", review_count:3 },
+  { id:'10', name:"The Spread Eagle", street:"Walmgate", city:"York", score:4.2, tier:"avoid", door:false, lock:false, shelf:false, paper:false, hook:false, clean:false, tagline:"Abandon hope, all ye who enter here.", review_count:4 },
+]
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+let db = null
+let allPubs = []
+let usingSupabase = false
+
+function initSupabase() {
+  if (SUPABASE_URL === 'https://vmvkxwkwkrzbiozublis.supabase.co') {
+    console.log('Using demo data — add Supabase credentials to go live')
+    return false
+  }
+  try {
+    db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+    return true
+  } catch(e) {
+    console.warn('Supabase init failed:', e)
+    return false
+  }
+}
+
+async function loadPubs() {
+  document.getElementById('top-loading').style.display = 'block'
+  if (usingSupabase && db) {
+    try {
+      const { data, error } = await db.from('pubs').select('*').order('score', { ascending: false })
+      if (error) throw error
+      allPubs = data.length > 0 ? data : FALLBACK_PUBS
+    } catch(e) {
+      console.warn('DB load failed, using demo data:', e)
+      allPubs = FALLBACK_PUBS
+    }
+  } else {
+    // Simulate load delay for realism
+    await new Promise(r => setTimeout(r, 600))
+    allPubs = FALLBACK_PUBS
+  }
+  document.getElementById('top-loading').style.display = 'none'
+  renderAll()
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+const tierClass = t => ({excellent:'s-excellent',good:'s-good',decent:'s-decent',avoid:'s-avoid'}[t]||'s-decent')
+const tierLabel = t => ({excellent:'Excellent',good:'Good',decent:'Decent',avoid:'Avoid'}[t]||'Unknown')
+const barCol    = t => ({excellent:'#4a9e5c',good:'#c9a84c',decent:'#555',avoid:'#c05050'}[t]||'#555')
+
+function renderAll() {
+  renderHero(allPubs[0])
+  renderList(allPubs.slice(1), 'pub-list', 2)
+}
+
+function renderHero(p) {
+  if (!p) return
+  const chips = [
+    [p.door,'🚪 Full Door'],[p.lock,'🔒 Solid Lock'],
+    [p.shelf,'📱 Shelf'],[p.clean,'✨ Clean'],
+  ]
+  const el = document.createElement('div')
+  el.className = 'hero-card'
+  el.onclick = () => openDetail(p)
+  el.innerHTML = `
+    <div class="hero-crown">
+      <div class="crown-badge"><span class="crown-icon">👑</span><span class="crown-label">Top Rated</span></div>
+      <div class="hero-score">${p.score}<sup>/10</sup></div>
+    </div>
+    <div class="hero-body">
+      <div class="hero-name">${p.name}</div>
+      <div class="hero-street">${p.street}, ${p.city||'York'}</div>
+      <div class="hero-features">
+        ${chips.map(([v,l])=>`<div class="feat-chip ${v?'yes':'no'}">${l}</div>`).join('')}
+      </div>
+    </div>`
+  const wrap = document.getElementById('hero-wrap')
+  wrap.innerHTML = ''; wrap.appendChild(el)
+}
+
+function renderList(pubs, containerId, startRank=2) {
+  const c = document.getElementById(containerId); c.innerHTML = ''
+  if (!pubs.length) {
+    c.innerHTML = '<div class="empty-state"><div class="empty-icon">🚽</div><p>No ratings yet.<br>Be the first to submit one.</p></div>'
+    return
+  }
+  pubs.forEach((p, i) => {
+    const el = document.createElement('div')
+    el.className = `pub-card ${p.tier||'decent'}`
+    el.style.animationDelay = `${i*0.04}s`
+    el.onclick = () => openDetail(p)
+    el.innerHTML = `
+      <div class="pub-rank">${startRank+i}</div>
+      <div class="pub-info">
+        <div class="pub-name">${p.name}</div>
+        <div class="pub-street">${p.street}${p.city?', '+p.city:''}</div>
+        <div class="pub-chips">
+          <span class="chip ${p.door?'yes':'no'}">${p.door?'✓':'✗'} Door</span>
+          <span class="chip ${p.lock?'yes':'no'}">${p.lock?'✓':'✗'} Lock</span>
+          <span class="chip ${p.shelf?'yes':'meh'}">${p.shelf?'✓':'✗'} Shelf</span>
+          <span class="chip ${p.clean?'yes':'no'}">${p.clean?'✓':'✗'} Clean</span>
+        </div>
+      </div>
+      <div class="pub-right">
+        <div class="pub-score ${tierClass(p.tier)}">${p.score}</div>
+        <div class="pub-score-den">/10</div>
+        <div class="pub-reviews">${p.review_count||0} report${p.review_count!==1?'s':''}</div>
+      </div>`
+    c.appendChild(el)
+  })
+}
+
+// ── DETAIL ────────────────────────────────────────────────────────────────────
+async function openDetail(p) {
+  document.getElementById('d-name').textContent = p.name
+  document.getElementById('d-score').textContent = p.score
+  document.getElementById('d-score').className = `d-score-num ${tierClass(p.tier)}`
+  document.getElementById('d-verdict').textContent = tierLabel(p.tier)
+  document.getElementById('d-tagline').textContent = p.tagline || ''
+  document.getElementById('d-addr').textContent = [p.street, p.city].filter(Boolean).join(' · ')
+
+  const rows = [
+    ['🚪 Full Length Door',p.door],['🔒 Working Lock',p.lock],
+    ['📱 Shelf Available',p.shelf],['🧻 Paper Stocked',p.paper],
+    ['🪝 Door Hook',p.hook],['✨ Cleanliness',p.clean],
+  ]
+  document.getElementById('d-ratings').innerHTML = rows.map(([l,v])=>`
+    <div class="d-rating-row">
+      <div class="d-rating-label">${l}</div>
+      <div class="d-bar-wrap"><div class="d-bar" style="width:${v?'100%':'15%'};background:${v?barCol(p.tier):'#c05050'}"></div></div>
+      <div class="d-rating-icon">${v?'✓':'✗'}</div>
+    </div>`).join('')
+
+  // Load photos + reviews from ratings table
+  let ratings = []
+  if (usingSupabase && db) {
+    try {
+      const { data } = await db.from('ratings').select('*').eq('pub_id', p.id).order('created_at', { ascending: false }).limit(10)
+      ratings = data || []
+    } catch(e) {}
+  }
+
+  // Photos
+  const photoKeys = ['photo_door','photo_lock','photo_shelf','photo_vibe']
+  const photoLabels = ['Door','Lock','Shelf','Vibe']
+  const photos = ratings.find(r => r.photo_door || r.photo_lock || r.photo_shelf || r.photo_vibe) || {}
+  document.getElementById('d-photos').innerHTML = photoKeys.map((k,i) =>
+    photos[k]
+      ? `<div class="d-photo-slot"><img src="${photos[k]}" loading="lazy"></div>`
+      : `<div class="d-photo-slot empty"><span>${['🚪','🔒','📱','🚽'][i]}</span><span class="d-photo-label">${photoLabels[i]}</span></div>`
+  ).join('')
+
+  // Reviews
+  const reviewsHtml = ratings.filter(r=>r.review).slice(0,5).map(r=>`
+    <div class="d-review">
+      <div class="d-review-meta">
+        <div class="d-review-author">Anonymous</div>
+        <div class="d-review-date">${new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>
+      </div>
+      <div class="d-review-text">"${r.review}"</div>
+    </div>`).join('') || '<p style="color:rgba(255,255,255,0.3);font-size:12px;padding:8px 0">No reviews yet — be the first.</p>'
+  document.getElementById('d-reviews').innerHTML = reviewsHtml
+
+  document.getElementById('detail-screen').style.display = 'block'
+  document.getElementById('detail-screen').scrollTop = 0
+}
+
+function closeDetail() { document.getElementById('detail-screen').style.display = 'none' }
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+function filterPubs() {
+  const q = document.getElementById('search-input').value.toLowerCase()
+  const f = allPubs.filter(p => p.name.toLowerCase().includes(q) || (p.street||'').toLowerCase().includes(q))
+  renderHero(f[0])
+  renderList(f.slice(1), 'pub-list', 2)
+}
+
+// ── NEARBY ────────────────────────────────────────────────────────────────────
+function locateMe() {
+  if (!navigator.geolocation) { showToast('Location not supported'); return }
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude, longitude } = pos.coords
+    document.getElementById('nearby-hero').style.display = 'none'
+    // In full version: sort by distance using lat/lng stored in DB
+    // For now: show shuffled as demo
+    const near = [...allPubs].sort(()=>Math.random()-0.5).slice(0,6)
+    renderList(near, 'nearby-list', 1)
+    showToast('📍 Showing nearest cubicles')
+  }, () => showToast('Could not get location'))
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(t) {
+  ['top','nearby','submit'].forEach((s,i) => {
+    document.getElementById(`screen-${s}`).classList.toggle('active', s===t)
+    document.querySelectorAll('.nav-tab')[i].classList.toggle('active', s===t)
+    document.getElementById(`bnav-${s}`).classList.toggle('active', s===t)
+  })
+}
+
+// ── SUBMIT FORM ───────────────────────────────────────────────────────────────
+let poopScore = 0
+const photoFiles = {}
+
+function setScore(n) {
+  poopScore = n
+  document.querySelectorAll('.poop-btn').forEach((b,i)=>b.classList.toggle('active',i<n))
+}
+function tog(id) { document.getElementById(id).classList.toggle('on') }
+function sw(id) { return document.getElementById(id).classList.contains('on') }
+
+function triggerPhoto(id) { document.getElementById(id).click() }
+function previewPhoto(input) {
+  const file = input.files[0]; if (!file) return
+  const slot = input.parentElement
+  const img = document.createElement('img')
+  img.src = URL.createObjectURL(file)
+  // Remove old preview img if any
+  const old = slot.querySelector('img'); if (old) old.remove()
+  slot.appendChild(img)
+  photoFiles[input.id] = file
+  slot.style.borderStyle = 'solid'; slot.style.borderColor = 'rgba(201,168,76,0.4)'
+}
+
+async function uploadPhoto(file, pubId, type) {
+  if (!file || !db) return null
+  try {
+    const ext = file.name.split('.').pop()
+    const path = `${pubId}/${type}-${Date.now()}.${ext}`
+    const { data, error } = await db.storage.from('cubicle-photos').upload(path, file, { cacheControl:'3600', upsert:false })
+    if (error) throw error
+    const { data: urlData } = db.storage.from('cubicle-photos').getPublicUrl(path)
+    return urlData.publicUrl
+  } catch(e) { console.warn('Photo upload failed:', e); return null }
+}
+
+async function submitRating() {
+  const pub  = document.getElementById('f-pub').value.trim()
+  const street = document.getElementById('f-street').value.trim()
+  const city = document.getElementById('f-city').value.trim() || 'York'
+  const review = document.getElementById('f-review').value.trim()
+  if (!pub)      { showToast('Please enter a pub name'); return }
+  if (!poopScore){ showToast('Please give a score'); return }
+
+  const btn = document.getElementById('submit-btn')
+  btn.disabled = true; btn.textContent = 'Submitting...'
+
+  // Calculate score (0-10 based on toggles + poop rating)
+  const toggleScore = [sw('t-door'),sw('t-lock'),sw('t-shelf'),sw('t-paper'),sw('t-hook'),sw('t-clean')].filter(Boolean).length
+  const score = Math.round(((toggleScore/6)*7 + (poopScore/5)*3) * 10) / 10
+  const tier = score >= 8 ? 'excellent' : score >= 6.5 ? 'good' : score >= 5 ? 'decent' : 'avoid'
+
+  const ratingData = {
+    pub_name: pub, street, city, score,
+    door: sw('t-door'), lock: sw('t-lock'), shelf: sw('t-shelf'),
+    paper: sw('t-paper'), hook: sw('t-hook'), clean: sw('t-clean'),
+    review: review || null,
+  }
+
+  if (usingSupabase && db) {
+    try {
+      // Check if pub exists
+      let { data: existingPub } = await db.from('pubs').select('id').ilike('name', pub).limit(1)
+      let pubId
+
+      if (existingPub && existingPub.length > 0) {
+        pubId = existingPub[0].id
+        // Update score (simple average — improve later with proper averaging)
+        await db.from('pubs').update({
+          score, tier,
+          door: sw('t-door'), lock: sw('t-lock'), shelf: sw('t-shelf'),
+          paper: sw('t-paper'), hook: sw('t-hook'), clean: sw('t-clean'),
+          review_count: (existingPub[0].review_count || 0) + 1
+        }).eq('id', pubId)
+      } else {
+        // Create new pub
+        const { data: newPub } = await db.from('pubs').insert({
+          name: pub, street, city, score, tier,
+          door: sw('t-door'), lock: sw('t-lock'), shelf: sw('t-shelf'),
+          paper: sw('t-paper'), hook: sw('t-hook'), clean: sw('t-clean'),
+          review_count: 1
+        }).select().single()
+        pubId = newPub?.id
+      }
+
+      // Upload photos
+      if (pubId) {
+        ratingData.pub_id = pubId
+        ratingData.photo_door  = await uploadPhoto(photoFiles['photo-door'],  pubId, 'door')
+        ratingData.photo_lock  = await uploadPhoto(photoFiles['photo-lock'],  pubId, 'lock')
+        ratingData.photo_shelf = await uploadPhoto(photoFiles['photo-shelf'], pubId, 'shelf')
+        ratingData.photo_vibe  = await uploadPhoto(photoFiles['photo-vibe'],  pubId, 'vibe')
+      }
+
+      await db.from('ratings').insert(ratingData)
+      showToast('🚽 Rating saved — cheers!')
+      await loadPubs() // Refresh list
+
+    } catch(e) {
+      console.error('Submit failed:', e)
+      showToast('Something went wrong — try again')
+    }
+  } else {
+    // Demo mode — just add to local list
+    await new Promise(r => setTimeout(r, 800))
+    allPubs.unshift({ id: Date.now().toString(), name: pub, street, city, score, tier, review_count: 1,
+      door: sw('t-door'), lock: sw('t-lock'), shelf: sw('t-shelf'),
+      paper: sw('t-paper'), hook: sw('t-hook'), clean: sw('t-clean'),
+      tagline: review || 'Newly submitted.' })
+    allPubs.sort((a,b) => b.score - a.score)
+    renderAll()
+    showToast('🚽 Rating submitted!')
+  }
+
+  // Reset form
+  btn.disabled = false; btn.textContent = 'Submit Rating'
+  document.getElementById('f-pub').value = ''
+  document.getElementById('f-street').value = ''
+  document.getElementById('f-review').value = ''
+  document.querySelectorAll('.poop-btn').forEach(b=>b.classList.remove('active'))
+  document.querySelectorAll('.t-switch').forEach(b=>b.classList.remove('on'))
+  document.querySelectorAll('.photo-slot-upload img').forEach(img=>img.remove())
+  document.querySelectorAll('.photo-slot-upload').forEach(s=>{s.style.borderStyle='';s.style.borderColor=''})
+  Object.keys(photoFiles).forEach(k=>delete photoFiles[k])
+  poopScore = 0
+
+  setTimeout(()=>switchTab('top'), 1200)
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────────────────
+function showToast(m) {
+  const t = document.getElementById('toast'); t.textContent = m
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2500)
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+usingSupabase = initSupabase()
+loadPubs()
+</script>
+</body>
+</html>

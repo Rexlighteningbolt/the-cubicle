@@ -669,8 +669,15 @@ async function submitRating() {
   if (!pub)      { showToast('Please enter a pub name'); return }
   if (!poopScore){ showToast('Please give a score'); return }
 
-  const btn = document.getElementById('submit-btn')
-  btn.disabled = true; btn.textContent = 'Submitting...'
+  // Profanity check
+  if (containsProfanity(pub) || containsProfanity(review)) {
+    showToast('⚠ Please keep reviews helpful and respectful')
+    btn.disabled = false; btn.textContent = 'Submit Rating'
+    return
+  }
+
+  // Sanitise review text just in case
+  const cleanReview = sanitiseText(review) || null
 
   // Calculate score (0-10 based on toggles + poop rating)
   const toggleScore = [sw('t-door'),sw('t-lock'),sw('t-shelf'),sw('t-paper'),sw('t-hook'),sw('t-clean')].filter(Boolean).length
@@ -681,7 +688,7 @@ async function submitRating() {
     pub_name: pub, street, city, score,
     door: sw('t-door'), lock: sw('t-lock'), shelf: sw('t-shelf'),
     paper: sw('t-paper'), hook: sw('t-hook'), clean: sw('t-clean'),
-    review: review || null,
+    review: cleanReview,
   }
 
   if (usingSupabase && db) {
@@ -754,7 +761,33 @@ async function submitRating() {
   setTimeout(()=>switchTab('top'), 1200)
 }
 
-// ── TOAST ──────────────────────────────────────────────────────────────────────
+// ── PROFANITY FILTER ──────────────────────────────────────────────────────────
+const BAD_WORDS = [
+  'fuck','shit','cunt','bastard','wank','cock','dick','pussy','arse','arsehole',
+  'asshole','bitch','bollocks','twat','prick','knob','tit','tits','bellend',
+  'shite','motherfucker','fuckhead','fuckwit','dipshit','bullshit','horseshit',
+  'wanker','tosser','twatface','shithead','dickhead','fuckface','nobhead',
+  'nigger','paki','faggot','retard','spastic','slag','slut','whore','pikey'
+]
+
+function containsProfanity(text) {
+  if (!text) return false
+  const lower = text.toLowerCase().replace(/[^a-z\s]/g, '')
+  return BAD_WORDS.some(word => {
+    const regex = new RegExp(`\\b${word}\\b`, 'i')
+    return regex.test(lower)
+  })
+}
+
+function sanitiseText(text) {
+  if (!text) return text
+  let clean = text
+  BAD_WORDS.forEach(word => {
+    const regex = new RegExp(`\\b${word}\\b`, 'gi')
+    clean = clean.replace(regex, '*'.repeat(word.length))
+  })
+  return clean
+}
 function showToast(m) {
   const t = document.getElementById('toast'); t.textContent = m
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2500)

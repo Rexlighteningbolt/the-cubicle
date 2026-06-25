@@ -107,9 +107,10 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 
 /* SEARCH */
 .search-wrap { position: relative; margin-bottom: 20px; }
-.search-input { width: 100%; padding: 13px 16px 13px 44px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; color: var(--cream); font-family: 'Montserrat', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
-.search-input::placeholder { color: rgba(255,255,255,0.2); }
-.search-input:focus { border-color: rgba(201,168,76,0.3); }
+.search-input { width: 100%; padding: 13px 16px 13px 44px; background: rgba(201,168,76,0.12); border: 1.5px solid rgba(201,168,76,0.6); border-radius: 10px; color: #ffffff; font-family: 'Montserrat', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
+.search-input::placeholder { color: rgba(201,168,76,0.8); }
+.search-input:focus { border-color: var(--gold); background: rgba(201,168,76,0.18); }
+.search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 15px; color: var(--gold); opacity: 1; }
 .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 15px; opacity: 0.25; }
 
 /* GOLD DIVIDER */

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -478,17 +479,19 @@ function renderHero(p) {
   const el = document.createElement('div')
   el.className = 'hero-card'
   el.onclick = () => openDetail(p)
+  const isRated = p.score !== null && p.review_count > 0
   el.innerHTML = `
     <div class="hero-crown">
-      <div class="crown-badge"><span class="crown-icon">👑</span><span class="crown-label">Top Rated</span></div>
-      <div class="hero-score">${p.score}<sup>/10</sup></div>
+      <div class="crown-badge"><span class="crown-icon">👑</span><span class="crown-label">First to Rate</span></div>
+      <div class="hero-score" style="font-size:${isRated?'52px':'22px'};color:${isRated?'var(--gold2)':'rgba(255,255,255,0.3)'}">
+        ${isRated ? `${p.score}<sup>/10</sup>` : 'Not yet rated'}
+      </div>
     </div>
     <div class="hero-body">
       <div class="hero-name">${p.name}</div>
       <div class="hero-street">${p.street}, ${p.city||'York'}</div>
-      <div class="hero-features">
-        ${chips.map(([v,l])=>`<div class="feat-chip ${v?'yes':'no'}">${l}</div>`).join('')}
-      </div>
+      ${isRated ? `<div class="hero-features">${chips.map(([v,l])=>`<div class="feat-chip ${v?'yes':'no'}">${l}</div>`).join('')}</div>`
+        : `<div style="font-size:12px;color:rgba(255,255,255,0.3);margin-top:4px">Be the first to rate this pub 🚽</div>`}
     </div>`
   const wrap = document.getElementById('hero-wrap')
   wrap.innerHTML = ''; wrap.appendChild(el)
@@ -505,22 +508,26 @@ function renderList(pubs, containerId, startRank=2) {
     el.className = `pub-card ${p.tier||'decent'}`
     el.style.animationDelay = `${i*0.04}s`
     el.onclick = () => openDetail(p)
+    const isRated = p.score !== null && p.review_count > 0
     el.innerHTML = `
       <div class="pub-rank">${startRank+i}</div>
       <div class="pub-info">
         <div class="pub-name">${p.name}</div>
         <div class="pub-street">${p.street}${p.city?', '+p.city:''}</div>
-        <div class="pub-chips">
+        ${isRated ? `<div class="pub-chips">
           <span class="chip ${p.door?'yes':'no'}">${p.door?'✓':'✗'} Door</span>
           <span class="chip ${p.lock?'yes':'no'}">${p.lock?'✓':'✗'} Lock</span>
           <span class="chip ${p.shelf?'yes':'meh'}">${p.shelf?'✓':'✗'} Shelf</span>
           <span class="chip ${p.clean?'yes':'no'}">${p.clean?'✓':'✗'} Clean</span>
-        </div>
+        </div>` : `<div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:4px">Not yet rated — be the first</div>`}
       </div>
       <div class="pub-right">
-        <div class="pub-score ${tierClass(p.tier)}">${p.score}</div>
-        <div class="pub-score-den">/10</div>
-        <div class="pub-reviews">${p.review_count||0} report${p.review_count!==1?'s':''}</div>
+        ${isRated
+          ? `<div class="pub-score ${tierClass(p.tier)}">${p.score}</div>
+             <div class="pub-score-den">/10</div>
+             <div class="pub-reviews">${p.review_count} report${p.review_count!==1?'s':''}</div>`
+          : `<div style="font-size:11px;color:rgba(255,255,255,0.2);text-align:right;margin-top:4px">🚽<br>Rate it</div>`
+        }
       </div>`
     c.appendChild(el)
   })
@@ -529,10 +536,11 @@ function renderList(pubs, containerId, startRank=2) {
 // ── DETAIL ────────────────────────────────────────────────────────────────────
 async function openDetail(p) {
   document.getElementById('d-name').textContent = p.name
-  document.getElementById('d-score').textContent = p.score
-  document.getElementById('d-score').className = `d-score-num ${tierClass(p.tier)}`
-  document.getElementById('d-verdict').textContent = tierLabel(p.tier)
-  document.getElementById('d-tagline').textContent = p.tagline || ''
+  const isRated = p.score !== null && p.review_count > 0
+  document.getElementById('d-score').textContent = isRated ? p.score : '?'
+  document.getElementById('d-score').className = `d-score-num ${isRated ? tierClass(p.tier) : 's-decent'}`
+  document.getElementById('d-verdict').textContent = isRated ? tierLabel(p.tier) : 'Not Yet Rated'
+  document.getElementById('d-tagline').textContent = isRated ? (p.tagline || '') : 'Be the first to visit and rate this pub.'
   document.getElementById('d-addr').textContent = [p.street, p.city].filter(Boolean).join(' · ')
 
   const rows = [

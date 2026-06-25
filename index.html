@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -547,12 +548,14 @@ async function openDetail(p) {
     ['📱 Shelf Available',p.shelf],['🧻 Paper Stocked',p.paper],
     ['🪝 Door Hook',p.hook],['✨ Cleanliness',p.clean],
   ]
-  document.getElementById('d-ratings').innerHTML = rows.map(([l,v])=>`
-    <div class="d-rating-row">
-      <div class="d-rating-label">${l}</div>
-      <div class="d-bar-wrap"><div class="d-bar" style="width:${v?'100%':'15%'};background:${v?barCol(p.tier):'#c05050'}"></div></div>
-      <div class="d-rating-icon">${v?'✓':'✗'}</div>
-    </div>`).join('')
+  document.getElementById('d-ratings').innerHTML = isRated
+    ? rows.map(([l,v])=>`
+      <div class="d-rating-row">
+        <div class="d-rating-label">${l}</div>
+        <div class="d-bar-wrap"><div class="d-bar" style="width:${v?'100%':'15%'};background:${v?barCol(p.tier):'#c05050'}"></div></div>
+        <div class="d-rating-icon">${v?'✓':'✗'}</div>
+      </div>`).join('')
+    : '<p style="color:rgba(255,255,255,0.25);font-size:12px;padding:4px 0">No data yet — submit a rating to populate this.</p>'
 
   // Load photos + reviews from ratings table
   let ratings = []

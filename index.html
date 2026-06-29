@@ -297,23 +297,39 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
         <textarea class="f-input f-textarea" id="f-review" rows="3" placeholder="Tell people what to expect. Honest is fine. Brutal is also fine."></textarea>
       </div>
       <div class="f-group">
-        <div class="f-label">Photos (tap to add)</div>
-        <div class="photo-grid-upload">
-          <div class="photo-slot-upload" onclick="triggerPhoto('photo-door')">
-            <div class="ps-icon">🚪</div><div class="ps-label">The door</div>
-            <input type="file" id="photo-door" accept="image/*" onchange="previewPhoto(this)">
+        <div class="f-label">Photos — add up to 8 (tap to add)</div>
+        <div class="photo-grid-upload" id="photo-grid">
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-0')">
+            <div class="ps-icon">📸</div><div class="ps-label">Add photo</div>
+            <input type="file" id="photo-0" accept="image/*" onchange="previewPhoto(this)">
           </div>
-          <div class="photo-slot-upload" onclick="triggerPhoto('photo-lock')">
-            <div class="ps-icon">🔒</div><div class="ps-label">The lock</div>
-            <input type="file" id="photo-lock" accept="image/*" onchange="previewPhoto(this)">
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-1')">
+            <div class="ps-icon">📸</div><div class="ps-label">Add photo</div>
+            <input type="file" id="photo-1" accept="image/*" onchange="previewPhoto(this)">
           </div>
-          <div class="photo-slot-upload" onclick="triggerPhoto('photo-shelf')">
-            <div class="ps-icon">📱</div><div class="ps-label">The shelf</div>
-            <input type="file" id="photo-shelf" accept="image/*" onchange="previewPhoto(this)">
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-2')">
+            <div class="ps-icon">📸</div><div class="ps-label">Add photo</div>
+            <input type="file" id="photo-2" accept="image/*" onchange="previewPhoto(this)">
           </div>
-          <div class="photo-slot-upload" onclick="triggerPhoto('photo-vibe')">
-            <div class="ps-icon">🚽</div><div class="ps-label">The vibe</div>
-            <input type="file" id="photo-vibe" accept="image/*" onchange="previewPhoto(this)">
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-3')">
+            <div class="ps-icon">📸</div><div class="ps-label">Add photo</div>
+            <input type="file" id="photo-3" accept="image/*" onchange="previewPhoto(this)">
+          </div>
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-4')">
+            <div class="ps-icon">📸</div><div class="ps-label">Add photo</div>
+            <input type="file" id="photo-4" accept="image/*" onchange="previewPhoto(this)">
+          </div>
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-5')">
+            <div class="ps-icon">📸</div><div class="ps-label">Add photo</div>
+            <input type="file" id="photo-5" accept="image/*" onchange="previewPhoto(this)">
+          </div>
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-6')">
+            <div class="ps-icon">📸</div><div class="ps-label">Add photo</div>
+            <input type="file" id="photo-6" accept="image/*" onchange="previewPhoto(this)">
+          </div>
+          <div class="photo-slot-upload" onclick="triggerPhoto('photo-7')">
+            <div class="ps-icon">📸</div><div class="ps-label">Add photo</div>
+            <input type="file" id="photo-7" accept="image/*" onchange="previewPhoto(this)">
           </div>
         </div>
       </div>
@@ -726,13 +742,20 @@ async function submitRating() {
         pubId = newPub?.id
       }
 
-      // Upload photos
+      // Upload all photos
       if (pubId) {
         ratingData.pub_id = pubId
-        ratingData.photo_door  = await uploadPhoto(photoFiles['photo-door'],  pubId, 'door')
-        ratingData.photo_lock  = await uploadPhoto(photoFiles['photo-lock'],  pubId, 'lock')
-        ratingData.photo_shelf = await uploadPhoto(photoFiles['photo-shelf'], pubId, 'shelf')
-        ratingData.photo_vibe  = await uploadPhoto(photoFiles['photo-vibe'],  pubId, 'vibe')
+        const photoUploads = []
+        for (let i = 0; i < 8; i++) {
+          if (photoFiles[`photo-${i}`]) {
+            const url = await uploadPhoto(photoFiles[`photo-${i}`], pubId, `photo${i}`)
+            if (url) photoUploads.push(url)
+          }
+        }
+        ratingData.photo_door  = photoUploads[0] || null
+        ratingData.photo_lock  = photoUploads[1] || null
+        ratingData.photo_shelf = photoUploads[2] || null
+        ratingData.photo_vibe  = photoUploads[3] || null
       }
 
       await db.from('ratings').insert(ratingData)

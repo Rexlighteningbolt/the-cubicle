@@ -260,7 +260,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
     <div class="submit-form">
       <div class="f-group">
         <div class="f-label">Pub Name *</div>
-        <input class="f-input" id="f-pub" placeholder="The Lamb & Lion" list="pub-datalist" autocomplete="off">
+        <input class="f-input" id="f-pub" placeholder="The Lamb & Lion" list="pub-datalist" autocomplete="off" oninput="onPubInput(this.value)">
         <datalist id="pub-datalist"></datalist>
       </div>
       <div class="f-group">
@@ -634,6 +634,14 @@ function setScore(n) {
   poopScore = n
   document.querySelectorAll('.poop-btn').forEach((b,i)=>b.classList.toggle('active',i<n))
 }
+function onPubInput(val) {
+  const match = allPubs.find(p => p.name.toLowerCase() === val.toLowerCase())
+  if (match) {
+    document.getElementById('f-street').value = match.street || ''
+    document.getElementById('f-city').value = match.city || 'York'
+  }
+}
+
 function tog(id) { document.getElementById(id).classList.toggle('on') }
 function sw(id) { return document.getElementById(id).classList.contains('on') }
 

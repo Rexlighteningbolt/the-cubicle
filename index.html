@@ -260,7 +260,8 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
     <div class="submit-form">
       <div class="f-group">
         <div class="f-label">Pub Name *</div>
-        <input class="f-input" id="f-pub" placeholder="The Lamb & Lion">
+        <input class="f-input" id="f-pub" placeholder="The Lamb & Lion" list="pub-datalist" autocomplete="off">
+        <datalist id="pub-datalist"></datalist>
       </div>
       <div class="f-group">
         <div class="f-label">Street *</div>
@@ -795,7 +796,17 @@ function showToast(m) {
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 usingSupabase = initSupabase()
-loadPubs()
+loadPubs().then(() => {
+  // Populate pub name suggestions from loaded data
+  const dl = document.getElementById('pub-datalist')
+  if (dl) {
+    allPubs.forEach(p => {
+      const opt = document.createElement('option')
+      opt.value = p.name
+      dl.appendChild(opt)
+    })
+  }
+})
 </script>
 </body>
 </html>

@@ -533,7 +533,7 @@ function renderHero(p) {
   const isRated = p.score !== null && p.review_count > 0
   el.innerHTML = `
     <div class="hero-crown">
-      <div class="crown-badge"><span class="crown-icon">👑</span><span class="crown-label">First to Rate</span></div>
+      <div class="crown-badge"><span class="crown-icon">👑</span><span class="crown-label">${isRated ? 'Top Rated' : 'First to Rate'}</span></div>
       <div class="hero-score" style="font-size:${isRated?'52px':'22px'};color:${isRated?'var(--gold2)':'rgba(255,255,255,0.3)'}">
         ${isRated ? `${p.score}<sup>/10</sup>` : 'Not yet rated'}
       </div>

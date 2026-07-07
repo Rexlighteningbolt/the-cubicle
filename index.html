@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -224,6 +225,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* CITY SELECTOR */
+.city-chevron { font-size: 9px; color: var(--gold); margin-left: 2px; line-height: 1; }
 #city-screen { position: fixed; inset: 0; z-index: 500; background: var(--black); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
 #city-screen.hidden { display: none; }
 .city-screen-logo { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 300; color: var(--cream); letter-spacing: 0.08em; font-style: italic; margin-bottom: 4px; text-align: center; }
@@ -237,7 +239,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 .city-btn-count { font-size: 9px; color: var(--dimmer); letter-spacing: 0.1em; text-transform: uppercase; }
 .city-btn-icon { font-size: 28px; margin-bottom: 8px; }
 .city-btn.coming-soon { opacity: 0.4; cursor: default; }
-.city-btn.coming-soon::after { content: ''; position: absolute; top: 10px; right: 10px; font-size: 7px; color: var(--gold); letter-spacing: 0.15em; font-weight: 600; }
+.city-btn.coming-soon::after { content: 'COMING SOON'; position: absolute; top: 10px; right: 10px; font-size: 7px; color: var(--gold); letter-spacing: 0.15em; font-weight: 600; }
 .lightbox { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(0,0,0,0.95); align-items: center; justify-content: center; }
 .lightbox.show { display: flex; }
 .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -266,10 +268,11 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 <div id="app">
   <header>
     <div class="header-top">
-      <div class="logo-title">The <span>Cubicle</span></div>
-      <div class="city-pill" onclick="document.getElementById('city-screen').classList.remove('hidden')" style="cursor:pointer">
+      <div class="logo-title" onclick="showCityScreen()" style="cursor:pointer" title="Back to city selection">The <span>Cubicle</span></div>
+      <div class="city-pill" onclick="showCityScreen()" style="cursor:pointer" title="Change city">
         <div class="city-dot"></div>
         <div class="city-name" id="city-label">York</div>
+        <div class="city-chevron">▾</div>
       </div>
     </div>
     <div class="nav-tabs">
@@ -422,35 +425,35 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
       <div class="city-btn-name">York</div>
       <div class="city-btn-count">132 pubs listed</div>
     </div>
-    <div class="city-btn coming-soon">
+    <div class="city-btn" onclick="selectCity('Leeds')">
       <div class="city-btn-icon">🍺</div>
       <div class="city-btn-name">Leeds</div>
-      <div class="city-btn-count"></div>
+      <div class="city-btn-count">Pubs listed</div>
     </div>
-    <div class="city-btn coming-soon">
+    <div class="city-btn" onclick="selectCity('Manchester')">
       <div class="city-btn-icon">🐝</div>
       <div class="city-btn-name">Manchester</div>
-      <div class="city-btn-count"></div>
+      <div class="city-btn-count">Pubs listed</div>
     </div>
-    <div class="city-btn coming-soon">
+    <div class="city-btn" onclick="selectCity('Newcastle')">
       <div class="city-btn-icon">⚓</div>
       <div class="city-btn-name">Newcastle</div>
-      <div class="city-btn-count"></div>
+      <div class="city-btn-count">Pubs listed</div>
     </div>
-    <div class="city-btn coming-soon">
+    <div class="city-btn" onclick="selectCity('Blackpool')">
       <div class="city-btn-icon">🎡</div>
       <div class="city-btn-name">Blackpool</div>
-      <div class="city-btn-count"></div>
+      <div class="city-btn-count">Pubs listed</div>
     </div>
-    <div class="city-btn coming-soon">
+    <div class="city-btn" onclick="selectCity('Cardiff')">
       <div class="city-btn-icon">🏴󠁧󠁢󠁷󠁬󠁳󠁿</div>
       <div class="city-btn-name">Cardiff</div>
-      <div class="city-btn-count"></div>
+      <div class="city-btn-count">Pubs listed</div>
     </div>
-    <div class="city-btn coming-soon">
+    <div class="city-btn" onclick="selectCity('London')">
       <div class="city-btn-icon">🏙️</div>
       <div class="city-btn-name">London</div>
-      <div class="city-btn-count"></div>
+      <div class="city-btn-count">Pubs listed</div>
     </div>
   </div>
 </div>
@@ -939,6 +942,11 @@ function selectCity(city) {
   document.getElementById('city-screen').classList.add('hidden')
   document.getElementById('f-city').value = city
   loadAndPopulate(city)
+}
+
+function showCityScreen() {
+  if (typeof closeDetail === 'function') { try { closeDetail() } catch (e) {} }
+  document.getElementById('city-screen').classList.remove('hidden')
 }
 
 // ── SERVICE WORKER ────────────────────────────────────────────────────────────

@@ -598,8 +598,15 @@ const tierLabel = t => ({excellent:'Excellent',good:'Good',decent:'Decent',avoid
 const barCol    = t => ({excellent:'#4a9e5c',good:'#c9a84c',decent:'#555',avoid:'#c05050'}[t]||'#555')
 
 function renderAll() {
-  renderHero(allPubs[0])
-  renderList(allPubs.slice(1), 'pub-list', 2)
+  const rated = allPubs.filter(p => p.score !== null && p.review_count > 0)
+  if (rated.length > 0) {
+    document.getElementById('hero-wrap').style.display = ''
+    renderHero(rated[0])
+    renderList(allPubs.filter(p => p !== rated[0]), 'pub-list', 2)
+  } else {
+    document.getElementById('hero-wrap').style.display = 'none'
+    renderList(allPubs, 'pub-list', 1)
+  }
 }
 
 function renderHero(p) {

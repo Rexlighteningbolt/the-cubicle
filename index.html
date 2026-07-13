@@ -267,8 +267,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
   <header>
     <div class="header-top">
       <div class="logo-title">The <span>Cubicle</span></div>
-      <div class="city-pill" onclick="document.getElementById('city-screen').classList.remove('hidden')" style="cursor:pointer;display:flex;align-items:center;gap:6px">
-        <span style="font-size:14px;opacity:0.7">←</span>
+      <div class="city-pill" onclick="document.getElementById('city-screen').classList.remove('hidden')" style="cursor:pointer">
         <div class="city-dot"></div>
         <div class="city-name" id="city-label">York</div>
       </div>
@@ -284,6 +283,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
   <div id="screen-top" class="screen active">
     <div class="s-eyebrow">The Cubicle</div>
     <div class="s-title">Britain's Pub Toilet Reviews</div>
+    <button onclick="document.getElementById('city-screen').classList.remove('hidden')" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:0.15em;padding:8px 16px;border-radius:20px;cursor:pointer;margin-bottom:16px;text-transform:uppercase">← Change City</button>
     <div class="search-wrap">
       <span class="search-icon">◎</span>
       <input class="search-input" id="search-input" placeholder="Search pub or street..." oninput="filterPubs()">

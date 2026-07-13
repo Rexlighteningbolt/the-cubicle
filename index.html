@@ -43,16 +43,16 @@ if('serviceWorker' in navigator){
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
-  --black:  #08080a;
-  --dark:   #0f0f12;
-  --card:   #13131a;
-  --border: rgba(255,255,255,0.07);
+  --black:  #12121a;
+  --dark:   #1a1a24;
+  --card:   #22222e;
+  --border: rgba(255,255,255,0.18);
   --gold:   #c9a84c;
   --gold2:  #f0d080;
   --gold3:  #7a5c18;
-  --cream:  #f5f0e6;
-  --dim:    rgba(255,255,255,0.75);
-  --dimmer: rgba(255,255,255,0.5);
+  --cream:  #ffffff;
+  --dim:    rgba(255,255,255,0.9);
+  --dimmer: rgba(255,255,255,0.7);
   --green:  #4a9e5c;
   --red:    #c05050;
 }
@@ -120,7 +120,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 .pub-card.decent::after    { background: #666; }
 .pub-card.avoid::after     { background: var(--red); }
 .pub-card:active { transform: scale(0.98); }
-.pub-rank { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: rgba(255,255,255,0.12); min-width: 32px; text-align: center; line-height: 1; }
+.pub-rank { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: rgba(255,255,255,0.3); min-width: 32px; text-align: center; line-height: 1; }
 .pub-info { flex: 1; min-width: 0; }
 .pub-name { font-size: 14px; font-weight: 600; color: var(--cream); margin-bottom: 2px; }
 .pub-street { font-size: 10px; color: var(--dimmer); letter-spacing: 0.06em; margin-bottom: 8px; }
@@ -658,14 +658,14 @@ function renderList(pubs, containerId, startRank=2) {
           <span class="chip ${p.lock?'yes':'no'}">${p.lock?'✓':'✗'} Lock</span>
           <span class="chip ${p.shelf?'yes':'meh'}">${p.shelf?'✓':'✗'} Shelf</span>
           <span class="chip ${p.clean?'yes':'no'}">${p.clean?'✓':'✗'} Clean</span>
-        </div>` : `<div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:4px">Not yet rated — be the first</div>`}
+        </div>` : `<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:4px">Not yet rated — be the first 🚽</div>`}
       </div>
       <div class="pub-right">
         ${isRated
           ? `<div class="pub-score ${tierClass(p.tier)}">${p.score}</div>
              <div class="pub-score-den">/10</div>
              <div class="pub-reviews">${p.review_count} report${p.review_count!==1?'s':''}</div>`
-          : `<div style="font-size:11px;color:rgba(255,255,255,0.2);text-align:right;margin-top:4px">🚽<br>Rate it</div>`
+          : `<div style="font-size:11px;color:rgba(201,168,76,0.8);text-align:right;margin-top:4px">🚽<br>Rate it</div>`
         }
       </div>`
     c.appendChild(el)

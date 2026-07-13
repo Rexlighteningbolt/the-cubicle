@@ -270,6 +270,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
       <div class="city-pill" onclick="document.getElementById('city-screen').classList.remove('hidden')" style="cursor:pointer">
         <div class="city-dot"></div>
         <div class="city-name" id="city-label">York</div>
+        <div style="margin-left:4px;font-size:10px;opacity:0.6">▾</div>
       </div>
     </div>
     <div class="nav-tabs">
@@ -415,7 +416,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 
 <div id="city-screen">
   <div class="city-screen-logo">The <span>Cubicle</span></div>
-  <div class="city-screen-sub">Britain's Pub Toilet Reviews</div>
+  <div class="city-screen-sub">Britain's Pub Toilet Reviews — Choose your city</div>
   <div class="city-grid">
     <div class="city-btn" onclick="selectCity('York')">
       <div class="city-btn-icon">🚽</div>
@@ -938,8 +939,13 @@ function selectCity(city) {
   document.getElementById('city-label').textContent = city
   document.getElementById('city-screen').classList.add('hidden')
   document.getElementById('f-city').value = city
+  history.pushState({city}, '', '')
   loadAndPopulate(city)
 }
+
+window.addEventListener('popstate', () => {
+  document.getElementById('city-screen').classList.remove('hidden')
+})
 
 // ── SERVICE WORKER ────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {

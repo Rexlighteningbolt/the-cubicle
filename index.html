@@ -284,8 +284,8 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
   <!-- TOP -->
   <div id="screen-top" class="screen active">
     <div class="s-eyebrow">The Cubicle</div>
-    <div class="s-title">Britain's Pub Toilet Reviews</div>
-    <button onclick="showCountryScreen()" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:0.15em;padding:8px 16px;border-radius:20px;cursor:pointer;margin-bottom:16px;text-transform:uppercase">← Change City</button>
+    <div class="s-title" id="s-title">Pub Toilet Reviews</div>
+    <button onclick="showCountryScreen()" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:0.15em;padding:8px 16px;border-radius:20px;cursor:pointer;margin-bottom:16px;text-transform:uppercase">← Change Location</button>
     <div class="search-wrap">
       <span class="search-icon">◎</span>
       <input class="search-input" id="search-input" placeholder="Search pub or street..." oninput="filterPubs()">
@@ -418,36 +418,43 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 
 <div id="country-screen">
   <div class="city-screen-logo">The <span>Cubicle</span></div>
-  <div class="city-screen-sub">Choose your country</div>
-  <div class="city-grid">
-    <div class="city-btn" onclick="selectCountry('uk')">
-      <div class="city-btn-icon">🇬🇧</div>
-      <div class="city-btn-name">United Kingdom</div>
-      <div class="city-btn-count">10 cities listed</div>
-    </div>
-    <div class="city-btn" onclick="selectCountry('usa')">
-      <div class="city-btn-icon">🇺🇸</div>
-      <div class="city-btn-name">United States</div>
-      <div class="city-btn-count">Coming soon</div>
-    </div>
-    <div class="city-btn" onclick="selectCountry('ie')">
-      <div class="city-btn-icon">🇮🇪</div>
-      <div class="city-btn-name">Ireland</div>
-      <div class="city-btn-count">Coming soon</div>
-    </div>
-    <div class="city-btn" onclick="selectCountry('au')">
-      <div class="city-btn-icon">🇦🇺</div>
-      <div class="city-btn-name">Australia</div>
-      <div class="city-btn-count">Coming soon</div>
-    </div>
-  </div>
-</div>
+  <div class="city-screen-sub">Pub & Bar Toilet Reviews</div>
 
-<div id="city-screen" class="hidden">
-  <div class="city-screen-logo">The <span>Cubicle</span></div>
-  <div class="city-screen-sub" id="city-screen-sub">Britain's Pub Toilet Reviews</div>
-  <button onclick="showCountryScreen()" style="background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:0.15em;padding:6px 14px;border-radius:20px;cursor:pointer;margin-bottom:20px;text-transform:uppercase">← Countries</button>
-  <div class="city-grid" id="city-grid"></div>
+  <div style="width:100%;max-width:420px;display:flex;flex-direction:column;gap:14px;margin-top:8px">
+
+    <!-- Country -->
+    <div style="position:relative">
+      <select id="country-select" onchange="onCountryChange()" style="width:100%;padding:14px 16px;background:var(--card);border:1.5px solid rgba(201,168,76,0.4);border-radius:12px;color:var(--cream);font-family:Montserrat,sans-serif;font-size:13px;appearance:none;outline:none;cursor:pointer">
+        <option value="">🌍 Select Country...</option>
+        <option value="uk">🇬🇧 United Kingdom</option>
+        <option value="usa">🇺🇸 United States</option>
+        <option value="ie">🇮🇪 Ireland</option>
+        <option value="au">🇦🇺 Australia</option>
+      </select>
+      <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--gold);pointer-events:none">▾</span>
+    </div>
+
+    <!-- City -->
+    <div style="position:relative">
+      <select id="city-select" onchange="onCityChange()" disabled style="width:100%;padding:14px 16px;background:var(--card);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;color:rgba(255,255,255,0.4);font-family:Montserrat,sans-serif;font-size:13px;appearance:none;outline:none;cursor:pointer" id="city-select">
+        <option value="">🏙️ Select City...</option>
+      </select>
+      <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--gold);pointer-events:none">▾</span>
+    </div>
+
+    <!-- Bar search -->
+    <div style="position:relative">
+      <input id="home-search" placeholder="🔍 Search bar or pub name..." oninput="onHomeSearch()" disabled
+        style="width:100%;padding:14px 16px;background:var(--card);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;color:var(--cream);font-family:Montserrat,sans-serif;font-size:13px;outline:none;box-sizing:border-box" />
+    </div>
+
+    <!-- Go button -->
+    <button id="go-btn" onclick="goToCity()" disabled
+      style="width:100%;padding:16px;background:var(--gold);border:none;border-radius:12px;color:#08080a;font-family:Montserrat,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;opacity:0.4;transition:opacity 0.2s">
+      View Pubs →
+    </button>
+
+  </div>
 </div>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
@@ -942,81 +949,111 @@ function closeLightbox() {
 
 const COUNTRIES = {
   uk: {
-    sub: "Britain's Pub Toilet Reviews",
-    cities: [
-      { name:'York', icon:'🚽', count:'132 pubs' },
-      { name:'Leeds', icon:'🍺', count:'100 pubs' },
-      { name:'Manchester', icon:'🐝', count:'100 pubs' },
-      { name:'Newcastle', icon:'⚓', count:'80 pubs' },
-      { name:'Blackpool', icon:'🎡', count:'60 pubs' },
-      { name:'Cardiff', icon:'🏴󠁧󠁢󠁷󠁬󠁳󠁿', count:'60 pubs' },
-      { name:'London', icon:'🏙️', count:'600 pubs' },
-      { name:'Liverpool', icon:'🎸', count:'80 pubs' },
-      { name:'Brighton', icon:'🎡', count:'80 pubs' },
-      { name:'Bristol', icon:'🚢', count:'80 pubs' },
-    ]
+    label: '🇬🇧 United Kingdom',
+    sub: "Pub Toilet Reviews",
+    cities: ['York','Leeds','Manchester','Newcastle','Blackpool','Cardiff','London','Liverpool','Brighton','Bristol','Glasgow','Edinburgh','Birmingham','Sheffield','Belfast','Swansea','Cambridge','Chester','Durham','Hull','Reading','Exeter','Plymouth','Bournemouth','Cheltenham','Gloucester','Darlington','Middlesbrough','Carlisle','Chesterfield','Colchester','Warrington','Peterborough','Milton Keynes','Newport','Londonderry','Chelmsford','Southend-On-Sea','Macclesfield','Torquay','Hartlepool','St. Ives']
   },
   usa: {
-    sub: "America's Bar Bathroom Reviews",
-    cities: [
-      { name:'New York', icon:'🗽', count:'323 bars listed' },
-      { name:'Chicago', icon:'🌬️', count:'Coming soon' },
-      { name:'Boston', icon:'🦞', count:'Coming soon' },
-      { name:'Nashville', icon:'🎸', count:'Coming soon' },
-      { name:'New Orleans', icon:'🎺', count:'Coming soon' },
-      { name:'Austin', icon:'🤠', count:'Coming soon' },
-      { name:'San Francisco', icon:'🌉', count:'Coming soon' },
-      { name:'Las Vegas', icon:'🎰', count:'Coming soon' },
-    ]
+    label: '🇺🇸 United States',
+    sub: "Bar Bathroom Reviews",
+    cities: ['New York','Chicago','Boston','Nashville','New Orleans','Austin','San Francisco','Las Vegas','Seattle','Denver']
   },
   ie: {
-    sub: "Ireland's Pub Toilet Reviews",
-    cities: [
-      { name:'Dublin', icon:'🍀', count:'Coming soon' },
-      { name:'Cork', icon:'🎸', count:'Coming soon' },
-      { name:'Galway', icon:'🌊', count:'Coming soon' },
-    ]
+    label: '🇮🇪 Ireland',
+    sub: "Pub Toilet Reviews",
+    cities: ['Dublin','Cork','Galway']
   },
   au: {
-    sub: "Australia's Pub Toilet Reviews",
-    cities: [
-      { name:'Sydney', icon:'🦘', count:'Coming soon' },
-      { name:'Melbourne', icon:'☕', count:'Coming soon' },
-      { name:'Brisbane', icon:'☀️', count:'Coming soon' },
-    ]
+    label: '🇦🇺 Australia',
+    sub: "Pub Toilet Reviews",
+    cities: ['Sydney','Melbourne','Brisbane']
   }
 }
 
+let selectedCountry = null
+let selectedCity = null
+
+function onCountryChange() {
+  const code = document.getElementById('country-select').value
+  const citySelect = document.getElementById('city-select')
+  const homeSearch = document.getElementById('home-search')
+  const goBtn = document.getElementById('go-btn')
+  
+  if (!code) {
+    citySelect.disabled = true
+    citySelect.style.color = 'rgba(255,255,255,0.4)'
+    citySelect.style.borderColor = 'rgba(255,255,255,0.1)'
+    homeSearch.disabled = true
+    homeSearch.style.borderColor = 'rgba(255,255,255,0.1)'
+    goBtn.disabled = true
+    goBtn.style.opacity = '0.4'
+    citySelect.innerHTML = '<option value="">🏙️ Select City...</option>'
+    return
+  }
+  
+  selectedCountry = code
+  const country = COUNTRIES[code]
+  citySelect.innerHTML = '<option value="">🏙️ Select City...</option>' +
+    country.cities.map(c => `<option value="${c}">${c}</option>`).join('')
+  citySelect.disabled = false
+  citySelect.style.color = 'var(--cream)'
+  citySelect.style.borderColor = 'rgba(201,168,76,0.4)'
+}
+
+function onCityChange() {
+  const city = document.getElementById('city-select').value
+  const homeSearch = document.getElementById('home-search')
+  const goBtn = document.getElementById('go-btn')
+  
+  selectedCity = city
+  if (city) {
+    homeSearch.disabled = false
+    homeSearch.style.borderColor = 'rgba(201,168,76,0.4)'
+    goBtn.disabled = false
+    goBtn.style.opacity = '1'
+  } else {
+    homeSearch.disabled = true
+    homeSearch.style.borderColor = 'rgba(255,255,255,0.1)'
+    goBtn.disabled = true
+    goBtn.style.opacity = '0.4'
+  }
+}
+
+function onHomeSearch() {
+  // Pre-search — will filter once city loads
+}
+
+function goToCity() {
+  if (!selectedCity) return
+  const country = COUNTRIES[selectedCountry]
+  document.getElementById('city-label').textContent = selectedCity
+  document.getElementById('city-screen-sub') && (document.getElementById('city-screen-sub').textContent = country.sub)
+  document.getElementById('s-title') && (document.getElementById('s-title').textContent = country.sub)
+  document.getElementById('country-screen').classList.add('hidden')
+  document.getElementById('f-city').value = selectedCity
+  history.pushState({city: selectedCity}, '', '')
+  
+  // Apply any pre-search
+  const q = document.getElementById('home-search').value.trim()
+  loadAndPopulate(selectedCity).then(() => {
+    if (q) {
+      document.getElementById('search-input').value = q
+      filterPubs()
+    }
+  })
+}
+
 function showCountryScreen() {
-  document.getElementById('city-screen').classList.add('hidden')
   document.getElementById('country-screen').classList.remove('hidden')
 }
 
-function selectCountry(code) {
-  const country = COUNTRIES[code]
-  if (!country) return
-  document.getElementById('city-screen-sub').textContent = country.sub
-  const grid = document.getElementById('city-grid')
-  grid.innerHTML = country.cities.map(c => `
-    <div class="city-btn" onclick="selectCity('${c.name}')">
-      <div class="city-btn-icon">${c.icon}</div>
-      <div class="city-btn-name">${c.name}</div>
-      <div class="city-btn-count">${c.count}</div>
-    </div>`).join('')
-  document.getElementById('country-screen').classList.add('hidden')
-  document.getElementById('city-screen').classList.remove('hidden')
-}
-
 function selectCity(city) {
-  document.getElementById('city-label').textContent = city
-  document.getElementById('city-screen').classList.add('hidden')
-  document.getElementById('f-city').value = city
-  history.pushState({city}, '', '')
-  loadAndPopulate(city)
+  selectedCity = city
+  goToCity()
 }
 
 window.addEventListener('popstate', () => {
-  document.getElementById('city-screen').classList.remove('hidden')
+  document.getElementById('country-screen').classList.remove('hidden')
 })
 
 // ── SERVICE WORKER ────────────────────────────────────────────────────────────

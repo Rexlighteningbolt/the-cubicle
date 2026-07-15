@@ -994,7 +994,7 @@ function onCountryChange() {
   selectedCountry = code
   const country = COUNTRIES[code]
   citySelect.innerHTML = '<option value="">🏙️ Select City...</option>' +
-    country.cities.map(c => `<option value="${c}">${c}</option>`).join('')
+    [...country.cities].sort().map(c => `<option value="${c}">${c}</option>`).join('')
   citySelect.disabled = false
   citySelect.style.color = 'var(--cream)'
   citySelect.style.borderColor = 'rgba(201,168,76,0.4)'

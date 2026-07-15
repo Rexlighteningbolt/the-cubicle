@@ -224,8 +224,10 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* CITY SELECTOR */
+#country-screen { position: fixed; inset: 0; z-index: 500; background: var(--black); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
 #city-screen { position: fixed; inset: 0; z-index: 500; background: var(--black); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
 #city-screen.hidden { display: none; }
+#country-screen.hidden { display: none; }
 .city-screen-logo { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 300; color: var(--cream); letter-spacing: 0.08em; font-style: italic; margin-bottom: 4px; text-align: center; }
 .city-screen-logo span { color: var(--gold); font-style: normal; font-weight: 600; }
 .city-screen-sub { font-size: 11px; color: var(--dimmer); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 48px; text-align: center; }
@@ -283,7 +285,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
   <div id="screen-top" class="screen active">
     <div class="s-eyebrow">The Cubicle</div>
     <div class="s-title">Britain's Pub Toilet Reviews</div>
-    <button onclick="document.getElementById('city-screen').classList.remove('hidden')" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:0.15em;padding:8px 16px;border-radius:20px;cursor:pointer;margin-bottom:16px;text-transform:uppercase">← Change City</button>
+    <button onclick="showCountryScreen()" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:0.15em;padding:8px 16px;border-radius:20px;cursor:pointer;margin-bottom:16px;text-transform:uppercase">← Change City</button>
     <div class="search-wrap">
       <span class="search-icon">◎</span>
       <input class="search-input" id="search-input" placeholder="Search pub or street..." oninput="filterPubs()">
@@ -414,61 +416,38 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
   </div>
 </div>
 
-<div id="city-screen">
+<div id="country-screen">
   <div class="city-screen-logo">The <span>Cubicle</span></div>
-  <div class="city-screen-sub">Britain's Pub Toilet Reviews — Choose your city</div>
+  <div class="city-screen-sub">Choose your country</div>
   <div class="city-grid">
-    <div class="city-btn" onclick="selectCity('York')">
-      <div class="city-btn-icon">🚽</div>
-      <div class="city-btn-name">York</div>
-      <div class="city-btn-count">132 pubs listed</div>
+    <div class="city-btn" onclick="selectCountry('uk')">
+      <div class="city-btn-icon">🇬🇧</div>
+      <div class="city-btn-name">United Kingdom</div>
+      <div class="city-btn-count">10 cities listed</div>
     </div>
-    <div class="city-btn" onclick="selectCity('Leeds')">
-      <div class="city-btn-icon">🍺</div>
-      <div class="city-btn-name">Leeds</div>
-      <div class="city-btn-count">100 pubs listed</div>
+    <div class="city-btn" onclick="selectCountry('usa')">
+      <div class="city-btn-icon">🇺🇸</div>
+      <div class="city-btn-name">United States</div>
+      <div class="city-btn-count">Coming soon</div>
     </div>
-    <div class="city-btn" onclick="selectCity('Manchester')">
-      <div class="city-btn-icon">🐝</div>
-      <div class="city-btn-name">Manchester</div>
-      <div class="city-btn-count">100 pubs listed</div>
+    <div class="city-btn" onclick="selectCountry('ie')">
+      <div class="city-btn-icon">🇮🇪</div>
+      <div class="city-btn-name">Ireland</div>
+      <div class="city-btn-count">Coming soon</div>
     </div>
-    <div class="city-btn" onclick="selectCity('Newcastle')">
-      <div class="city-btn-icon">⚓</div>
-      <div class="city-btn-name">Newcastle</div>
-      <div class="city-btn-count">80 pubs listed</div>
-    </div>
-    <div class="city-btn" onclick="selectCity('Blackpool')">
-      <div class="city-btn-icon">🎡</div>
-      <div class="city-btn-name">Blackpool</div>
-      <div class="city-btn-count">60 pubs listed</div>
-    </div>
-    <div class="city-btn" onclick="selectCity('Cardiff')">
-      <div class="city-btn-icon">🏴󠁧󠁢󠁷󠁬󠁳󠁿</div>
-      <div class="city-btn-name">Cardiff</div>
-      <div class="city-btn-count">60 pubs listed</div>
-    </div>
-    <div class="city-btn" onclick="selectCity('London')">
-      <div class="city-btn-icon">🏙️</div>
-      <div class="city-btn-name">London</div>
-      <div class="city-btn-count">600 pubs listed</div>
-    </div>
-    <div class="city-btn" onclick="selectCity('Liverpool')">
-      <div class="city-btn-icon">🎸</div>
-      <div class="city-btn-name">Liverpool</div>
-      <div class="city-btn-count">80 pubs listed</div>
-    </div>
-    <div class="city-btn" onclick="selectCity('Brighton')">
-      <div class="city-btn-icon">🎡</div>
-      <div class="city-btn-name">Brighton</div>
-      <div class="city-btn-count">80 pubs listed</div>
-    </div>
-    <div class="city-btn" onclick="selectCity('Bristol')">
-      <div class="city-btn-icon">🚢</div>
-      <div class="city-btn-name">Bristol</div>
-      <div class="city-btn-count">80 pubs listed</div>
+    <div class="city-btn" onclick="selectCountry('au')">
+      <div class="city-btn-icon">🇦🇺</div>
+      <div class="city-btn-name">Australia</div>
+      <div class="city-btn-count">Coming soon</div>
     </div>
   </div>
+</div>
+
+<div id="city-screen" class="hidden">
+  <div class="city-screen-logo">The <span>Cubicle</span></div>
+  <div class="city-screen-sub" id="city-screen-sub">Britain's Pub Toilet Reviews</div>
+  <button onclick="showCountryScreen()" style="background:none;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);font-family:Montserrat,sans-serif;font-size:10px;letter-spacing:0.15em;padding:6px 14px;border-radius:20px;cursor:pointer;margin-bottom:20px;text-transform:uppercase">← Countries</button>
+  <div class="city-grid" id="city-grid"></div>
 </div>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
@@ -961,6 +940,73 @@ function closeLightbox() {
   document.getElementById('lightbox').classList.remove('show')
 }
 
+const COUNTRIES = {
+  uk: {
+    sub: "Britain's Pub Toilet Reviews",
+    cities: [
+      { name:'York', icon:'🚽', count:'132 pubs' },
+      { name:'Leeds', icon:'🍺', count:'100 pubs' },
+      { name:'Manchester', icon:'🐝', count:'100 pubs' },
+      { name:'Newcastle', icon:'⚓', count:'80 pubs' },
+      { name:'Blackpool', icon:'🎡', count:'60 pubs' },
+      { name:'Cardiff', icon:'🏴󠁧󠁢󠁷󠁬󠁳󠁿', count:'60 pubs' },
+      { name:'London', icon:'🏙️', count:'600 pubs' },
+      { name:'Liverpool', icon:'🎸', count:'80 pubs' },
+      { name:'Brighton', icon:'🎡', count:'80 pubs' },
+      { name:'Bristol', icon:'🚢', count:'80 pubs' },
+    ]
+  },
+  usa: {
+    sub: "America's Bar Bathroom Reviews",
+    cities: [
+      { name:'New York', icon:'🗽', count:'Coming soon' },
+      { name:'Chicago', icon:'🌬️', count:'Coming soon' },
+      { name:'Boston', icon:'🦞', count:'Coming soon' },
+      { name:'Nashville', icon:'🎸', count:'Coming soon' },
+      { name:'New Orleans', icon:'🎺', count:'Coming soon' },
+      { name:'Austin', icon:'🤠', count:'Coming soon' },
+      { name:'San Francisco', icon:'🌉', count:'Coming soon' },
+      { name:'Las Vegas', icon:'🎰', count:'Coming soon' },
+    ]
+  },
+  ie: {
+    sub: "Ireland's Pub Toilet Reviews",
+    cities: [
+      { name:'Dublin', icon:'🍀', count:'Coming soon' },
+      { name:'Cork', icon:'🎸', count:'Coming soon' },
+      { name:'Galway', icon:'🌊', count:'Coming soon' },
+    ]
+  },
+  au: {
+    sub: "Australia's Pub Toilet Reviews",
+    cities: [
+      { name:'Sydney', icon:'🦘', count:'Coming soon' },
+      { name:'Melbourne', icon:'☕', count:'Coming soon' },
+      { name:'Brisbane', icon:'☀️', count:'Coming soon' },
+    ]
+  }
+}
+
+function showCountryScreen() {
+  document.getElementById('city-screen').classList.add('hidden')
+  document.getElementById('country-screen').classList.remove('hidden')
+}
+
+function selectCountry(code) {
+  const country = COUNTRIES[code]
+  if (!country) return
+  document.getElementById('city-screen-sub').textContent = country.sub
+  const grid = document.getElementById('city-grid')
+  grid.innerHTML = country.cities.map(c => `
+    <div class="city-btn" onclick="selectCity('${c.name}')">
+      <div class="city-btn-icon">${c.icon}</div>
+      <div class="city-btn-name">${c.name}</div>
+      <div class="city-btn-count">${c.count}</div>
+    </div>`).join('')
+  document.getElementById('country-screen').classList.add('hidden')
+  document.getElementById('city-screen').classList.remove('hidden')
+}
+
 function selectCity(city) {
   document.getElementById('city-label').textContent = city
   document.getElementById('city-screen').classList.add('hidden')
@@ -1000,4 +1046,3 @@ async function loadAndPopulate(city) {
 </script>
 </body>
 </html>
-

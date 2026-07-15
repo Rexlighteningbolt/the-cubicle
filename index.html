@@ -734,10 +734,14 @@ function closeDetail() { document.getElementById('detail-screen').style.display 
 
 // ── SEARCH ────────────────────────────────────────────────────────────────────
 function filterPubs() {
-  const q = document.getElementById('search-input').value.toLowerCase()
-  const f = allPubs.filter(p => p.name.toLowerCase().includes(q) || (p.street||'').toLowerCase().includes(q))
-  renderHero(f[0])
-  renderList(f.slice(1), 'pub-list', 2)
+  const q = document.getElementById('search-input').value.toLowerCase().trim()
+  if (!q) { renderAll(); return }
+  const f = allPubs.filter(p => 
+    p.name.toLowerCase().includes(q) || 
+    (p.street||'').toLowerCase().includes(q)
+  )
+  document.getElementById('hero-wrap').style.display = 'none'
+  renderList(f, 'pub-list', 1)
 }
 
 // ── NEARBY ────────────────────────────────────────────────────────────────────
@@ -996,3 +1000,4 @@ async function loadAndPopulate(city) {
 </script>
 </body>
 </html>
+

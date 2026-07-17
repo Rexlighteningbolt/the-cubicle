@@ -323,7 +323,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
       </div>
       <div class="f-group">
         <div class="f-label">City *</div>
-        <input class="f-input" id="f-city" placeholder="York" value="York">
+        <input class="f-input" id="f-city" placeholder="City" value="">
       </div>
       <div class="f-group">
         <div class="f-label">Overall Score *</div>
@@ -558,7 +558,7 @@ function initSupabase() {
   }
 }
 
-async function loadPubs(city = 'York') {
+async function loadPubs(city = '') {
   document.getElementById('top-loading').style.display = 'block'
   if (usingSupabase && db) {
     try {
@@ -765,7 +765,7 @@ function onPubInput(val) {
   const match = allPubs.find(p => p.name.toLowerCase() === val.toLowerCase())
   if (match) {
     document.getElementById('f-street').value = match.street || ''
-    document.getElementById('f-city').value = match.city || 'York'
+    document.getElementById('f-city').value = match.city || ''
   }
 }
 
@@ -800,7 +800,7 @@ async function uploadPhoto(file, pubId, type) {
 async function submitRating() {
   const pub  = document.getElementById('f-pub').value.trim()
   const street = document.getElementById('f-street').value.trim()
-  const city = document.getElementById('f-city').value.trim() || 'York'
+  const city = document.getElementById('f-city').value.trim()
   const review = document.getElementById('f-review').value.trim()
   if (!pub)      { showToast('Please enter a pub name'); return }
   if (!poopScore){ showToast('Please give a score'); return }

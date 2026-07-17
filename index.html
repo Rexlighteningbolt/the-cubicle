@@ -412,7 +412,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
     <div class="d-card"><div class="d-card-title">Breakdown</div><div id="d-ratings"></div></div>
     <div class="d-card"><div class="d-card-title">Photographic Evidence</div><div class="d-photo-grid" id="d-photos"></div></div>
     <div class="d-card"><div class="d-card-title">Field Reports</div><div id="d-reviews"></div></div>
-    <button class="d-add-btn" onclick="closeDetail();switchTab('submit')">+ Submit Your Rating</button>
+    <button class="d-add-btn" onclick="rateThisPub(currentPub.name, currentPub.street, currentPub.city)">+ Submit Your Rating</button>
   </div>
 </div>
 
@@ -651,7 +651,7 @@ function renderList(pubs, containerId, startRank=2) {
           ? `<div class="pub-score ${tierClass(p.tier)}">${p.score}</div>
              <div class="pub-score-den">/10</div>
              <div class="pub-reviews">${p.review_count} report${p.review_count!==1?'s':''}</div>`
-          : `<div style="font-size:11px;color:rgba(201,168,76,0.8);text-align:right;margin-top:4px">🚽<br>Rate it</div>`
+          : `<div style="font-size:11px;color:rgba(201,168,76,0.8);text-align:right;margin-top:4px;cursor:pointer" onclick="rateThisPub('${p.name.replace(/'/g,"\\'")}','${(p.street||'').replace(/'/g,"\\'")}','${(p.city||'').replace(/'/g,"\\'")}')">🚽<br>Rate it</div>`
         }
       </div>`
     c.appendChild(el)
@@ -659,7 +659,19 @@ function renderList(pubs, containerId, startRank=2) {
 }
 
 // ── DETAIL ────────────────────────────────────────────────────────────────────
-async function openDetail(p) {
+let currentPub = {}
+
+function rateThisPub(name, street, city) {
+  closeDetail()
+  switchTab('submit')
+  document.getElementById('f-pub').value = name
+  document.getElementById('f-street').value = street || ''
+  document.getElementById('f-city').value = city || ''
+  window.scrollTo(0, 0)
+}
+
+function openDetail(p) {
+  currentPub = p
   document.getElementById('d-name').textContent = p.name
   const isRated = p.score !== null && p.review_count > 0
   document.getElementById('d-score').textContent = isRated ? p.score : '?'

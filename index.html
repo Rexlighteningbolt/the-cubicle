@@ -563,18 +563,9 @@ async function loadPubs(city = '') {
   document.getElementById('top-loading').style.display = 'block'
   if (usingSupabase && db) {
     try {
-      const { data, error } = await db.from('pubs').select('*').eq('city', city).order('score', { ascending: false })
+      const { data, error } = await db.from('pubs').select('*').eq('city', city).order('review_count', { ascending: false }).order('score', { ascending: false })
       if (error) throw error
-      allPubs = data && data.length > 0 ? data.map(v => ({
-        id: v.id,
-        name: v.name,
-        street: v.street,
-        city: v.city,
-        score: v.score || 0,
-        tier: v.tier || 'decent',
-        review_count: v.review_count || 0,
-        tagline: v.tagline || 'Bar'
-      })) : FALLBACK_PUBS
+      allPubs = data.length > 0 ? data : FALLBACK_PUBS
     } catch(e) {
       console.warn('DB load failed, using demo data:', e)
       allPubs = FALLBACK_PUBS

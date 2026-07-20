@@ -563,9 +563,18 @@ async function loadPubs(city = '') {
   document.getElementById('top-loading').style.display = 'block'
   if (usingSupabase && db) {
     try {
-      const { data, error } = await db.from('pubs').select('*').eq('city', city).order('review_count', { ascending: false }).order('score', { ascending: false })
+      const { data, error } = await db.from('venues').select('*').eq('city', city).order('rating', { ascending: false })
       if (error) throw error
-      allPubs = data.length > 0 ? data : FALLBACK_PUBS
+      allPubs = data && data.length > 0 ? data.map(v => ({
+        id: v.id,
+        name: v.name,
+        street: v.address,
+        city: v.city,
+        score: v.rating || 0,
+        tier: v.rating >= 8 ? 'excellent' : v.rating >= 6.5 ? 'good' : v.rating >= 5 ? 'decent' : 'avoid',
+        review_count: 0,
+        tagline: v.venue_type || 'Venue'
+      })) : FALLBACK_PUBS
     } catch(e) {
       console.warn('DB load failed, using demo data:', e)
       allPubs = FALLBACK_PUBS
@@ -980,7 +989,7 @@ const COUNTRIES = {
   au: {
     label: '🇦🇺 Australia',
     sub: "Pub Toilet Reviews",
-    cities: ['Sydney','Melbourne','Brisbane','Perth','Adelaide','Hobart','Canberra','Gold Coast','Newcastle','Cairns','Darwin']
+    cities: ['Sydney','Melbourne','Brisbane','Perth','Adelaide','Hobart','Canberra','Gold Coast','Cairns','Darwin']
   }
 }
 

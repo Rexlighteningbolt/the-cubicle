@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -226,7 +225,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 
 /* CITY SELECTOR */
 #country-screen { position: fixed; inset: 0; z-index: 500; background: var(--black); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
-#city-screen { display: none; }
+#city-screen { position: fixed; inset: 0; z-index: 500; background: var(--black); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
 #city-screen.hidden { display: none; }
 #country-screen.hidden { display: none; }
 .city-screen-logo { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 300; color: var(--cream); letter-spacing: 0.08em; font-style: italic; margin-bottom: 4px; text-align: center; }
@@ -270,7 +269,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
   <header>
     <div class="header-top">
       <div class="logo-title">The <span>Cubicle</span></div>
-      <div class="city-pill" onclick="showCountryScreen()" style="cursor:pointer">
+      <div class="city-pill" onclick="document.getElementById('city-screen').classList.remove('hidden')" style="cursor:pointer">
         <div class="city-dot"></div>
         <div class="city-name" id="city-label">York</div>
       </div>
@@ -293,7 +292,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
     </div>
     <div id="hero-wrap"></div>
     <div class="gold-line"></div>
-    <div id="top-loading" class="loading" style="display:none"><div class="loading-spinner"></div><p>Loading...</p></div>
+    <div id="top-loading" class="loading"><div class="loading-spinner"></div><p>Loading York's finest...</p></div>
     <div class="pub-list" id="pub-list"></div>
   </div>
 
@@ -417,7 +416,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
   </div>
 </div>
 
-<div id="country-screen" class="hidden">
+<div id="country-screen">
   <div class="city-screen-logo">The <span>Cubicle</span></div>
   <div class="city-screen-sub">Pub & Bar Toilet Reviews</div>
 
@@ -660,9 +659,7 @@ function renderList(pubs, containerId, startRank=2) {
 }
 
 // ── DETAIL ────────────────────────────────────────────────────────────────────
-
-
-function openDetail(p) {
+async function openDetail(p) {
   document.getElementById('d-name').textContent = p.name
   const isRated = p.score !== null && p.review_count > 0
   document.getElementById('d-score').textContent = isRated ? p.score : '?'
@@ -1029,14 +1026,15 @@ function onHomeSearch() {
 function goToCity() {
   if (!selectedCity) return
   const country = COUNTRIES[selectedCountry]
-  document.getElementById('app').style.display = ''
   document.getElementById('city-label').textContent = selectedCity
-  document.getElementById('city-screen-sub') && (document.getElementById('city-screen-sub').textContent = country ? country.sub : '')
-  document.getElementById('s-title') && (document.getElementById('s-title').textContent = country ? country.sub : '')
+  document.getElementById('city-screen-sub') && (document.getElementById('city-screen-sub').textContent = country.sub)
+  document.getElementById('s-title') && (document.getElementById('s-title').textContent = country.sub)
   document.getElementById('country-screen').classList.add('hidden')
   document.getElementById('f-city').value = selectedCity
   history.pushState({city: selectedCity}, '', '')
-  const q = document.getElementById('home-search') ? document.getElementById('home-search').value.trim() : ''
+  
+  // Apply any pre-search
+  const q = document.getElementById('home-search').value.trim()
   loadAndPopulate(selectedCity).then(() => {
     if (q) {
       document.getElementById('search-input').value = q
@@ -1046,7 +1044,6 @@ function goToCity() {
 }
 
 function showCountryScreen() {
-  document.getElementById('app').style.display = 'none'
   document.getElementById('country-screen').classList.remove('hidden')
 }
 
@@ -1068,8 +1065,7 @@ if ('serviceWorker' in navigator) {
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 usingSupabase = initSupabase()
-document.getElementById('app').style.display = 'none'
-showCountryScreen()
+// City screen shows on load — loadPubs called when city selected
 // Populate datalist after pubs load
 async function loadAndPopulate(city) {
   await loadPubs(city)

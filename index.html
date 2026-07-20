@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -659,8 +660,12 @@ function renderList(pubs, containerId, startRank=2) {
   })
 }
 
+// ── STORE CURRENT PUB FOR RATING ─────────────────────────────────────────────
+let currentRatingPub = null
+
 // ── DETAIL ────────────────────────────────────────────────────────────────────
 async function openDetail(p) {
+  currentRatingPub = p  // Store pub data for auto-fill when switching to submit tab
   document.getElementById('d-name').textContent = p.name
   const isRated = p.score !== null && p.review_count > 0
   document.getElementById('d-score').textContent = isRated ? p.score : '?'
@@ -746,12 +751,23 @@ function locateMe() {
 }
 
 // ── TABS ──────────────────────────────────────────────────────────────────────
+function autoFillSubmitForm() {
+  if (currentRatingPub) {
+    document.getElementById('f-pub').value = currentRatingPub.name || ''
+    document.getElementById('f-street').value = currentRatingPub.street || ''
+    document.getElementById('f-city').value = currentRatingPub.city || ''
+  }
+}
+
 function switchTab(t) {
   ['top','nearby','submit'].forEach((s,i) => {
     document.getElementById(`screen-${s}`).classList.toggle('active', s===t)
     document.querySelectorAll('.nav-tab')[i].classList.toggle('active', s===t)
     document.getElementById(`bnav-${s}`).classList.toggle('active', s===t)
   })
+  if (t === 'submit') {
+    autoFillSubmitForm()
+  }
 }
 
 // ── SUBMIT FORM ───────────────────────────────────────────────────────────────

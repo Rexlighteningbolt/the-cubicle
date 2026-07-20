@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -225,7 +226,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 
 /* CITY SELECTOR */
 #country-screen { position: fixed; inset: 0; z-index: 500; background: var(--black); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
-#city-screen { position: fixed; inset: 0; z-index: 500; background: var(--black); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
+#city-screen { display: none; }
 #city-screen.hidden { display: none; }
 #country-screen.hidden { display: none; }
 .city-screen-logo { font-family: 'Cormorant Garamond', serif; font-size: 52px; font-weight: 300; color: var(--cream); letter-spacing: 0.08em; font-style: italic; margin-bottom: 4px; text-align: center; }
@@ -269,7 +270,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
   <header>
     <div class="header-top">
       <div class="logo-title">The <span>Cubicle</span></div>
-      <div class="city-pill" onclick="document.getElementById('city-screen').classList.remove('hidden')" style="cursor:pointer">
+      <div class="city-pill" onclick="showCountryScreen()" style="cursor:pointer">
         <div class="city-dot"></div>
         <div class="city-name" id="city-label">York</div>
       </div>
@@ -412,11 +413,11 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
     <div class="d-card"><div class="d-card-title">Breakdown</div><div id="d-ratings"></div></div>
     <div class="d-card"><div class="d-card-title">Photographic Evidence</div><div class="d-photo-grid" id="d-photos"></div></div>
     <div class="d-card"><div class="d-card-title">Field Reports</div><div id="d-reviews"></div></div>
-    <button class="d-add-btn" onclick="rateThisPub(currentPub.name, currentPub.street, currentPub.city)">+ Submit Your Rating</button>
+    <button class="d-add-btn" onclick="closeDetail();switchTab('submit')">+ Submit Your Rating</button>
   </div>
 </div>
 
-<div id="country-screen">
+<div id="country-screen" class="hidden">
   <div class="city-screen-logo">The <span>Cubicle</span></div>
   <div class="city-screen-sub">Pub & Bar Toilet Reviews</div>
 
@@ -1077,7 +1078,7 @@ if ('serviceWorker' in navigator) {
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 usingSupabase = initSupabase()
-// City screen shows on load — loadPubs called when city selected
+showCountryScreen()
 // Populate datalist after pubs load
 async function loadAndPopulate(city) {
   await loadPubs(city)

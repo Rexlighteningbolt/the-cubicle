@@ -563,7 +563,7 @@ async function loadPubs(city = '') {
   document.getElementById('top-loading').style.display = 'block'
   if (usingSupabase && db) {
     try {
-      const { data, error } = await db.from('pubs').select('*').eq('city', city).order('rating', { ascending: false })
+      const { data, error } = await db.from('pubs').select('*').eq('city', city).order('score', { ascending: false })
       if (error) throw error
       allPubs = data && data.length > 0 ? data.map(v => ({
         id: v.id,

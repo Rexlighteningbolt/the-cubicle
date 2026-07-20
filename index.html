@@ -293,7 +293,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
     </div>
     <div id="hero-wrap"></div>
     <div class="gold-line"></div>
-    <div id="top-loading" class="loading"><div class="loading-spinner"></div><p>Loading York's finest...</p></div>
+    <div id="top-loading" class="loading" style="display:none"><div class="loading-spinner"></div><p>Loading...</p></div>
     <div class="pub-list" id="pub-list"></div>
   </div>
 
@@ -652,7 +652,7 @@ function renderList(pubs, containerId, startRank=2) {
           ? `<div class="pub-score ${tierClass(p.tier)}">${p.score}</div>
              <div class="pub-score-den">/10</div>
              <div class="pub-reviews">${p.review_count} report${p.review_count!==1?'s':''}</div>`
-          : `<div style="font-size:11px;color:rgba(201,168,76,0.8);text-align:right;margin-top:4px;cursor:pointer" onclick="rateThisPub('${p.name.replace(/'/g,"\\'")}','${(p.street||'').replace(/'/g,"\\'")}','${(p.city||'').replace(/'/g,"\\'")}')">🚽<br>Rate it</div>`
+          : `<div style="font-size:11px;color:rgba(201,168,76,0.8);text-align:right;margin-top:4px">🚽<br>Rate it</div>`
         }
       </div>`
     c.appendChild(el)
@@ -660,19 +660,9 @@ function renderList(pubs, containerId, startRank=2) {
 }
 
 // ── DETAIL ────────────────────────────────────────────────────────────────────
-let currentPub = {}
 
-function rateThisPub(name, street, city) {
-  closeDetail()
-  switchTab('submit')
-  document.getElementById('f-pub').value = name
-  document.getElementById('f-street').value = street || ''
-  document.getElementById('f-city').value = city || ''
-  window.scrollTo(0, 0)
-}
 
 function openDetail(p) {
-  currentPub = p
   document.getElementById('d-name').textContent = p.name
   const isRated = p.score !== null && p.review_count > 0
   document.getElementById('d-score').textContent = isRated ? p.score : '?'
@@ -1039,15 +1029,14 @@ function onHomeSearch() {
 function goToCity() {
   if (!selectedCity) return
   const country = COUNTRIES[selectedCountry]
+  document.getElementById('app').style.display = ''
   document.getElementById('city-label').textContent = selectedCity
-  document.getElementById('city-screen-sub') && (document.getElementById('city-screen-sub').textContent = country.sub)
-  document.getElementById('s-title') && (document.getElementById('s-title').textContent = country.sub)
+  document.getElementById('city-screen-sub') && (document.getElementById('city-screen-sub').textContent = country ? country.sub : '')
+  document.getElementById('s-title') && (document.getElementById('s-title').textContent = country ? country.sub : '')
   document.getElementById('country-screen').classList.add('hidden')
   document.getElementById('f-city').value = selectedCity
   history.pushState({city: selectedCity}, '', '')
-  
-  // Apply any pre-search
-  const q = document.getElementById('home-search').value.trim()
+  const q = document.getElementById('home-search') ? document.getElementById('home-search').value.trim() : ''
   loadAndPopulate(selectedCity).then(() => {
     if (q) {
       document.getElementById('search-input').value = q
@@ -1057,6 +1046,7 @@ function goToCity() {
 }
 
 function showCountryScreen() {
+  document.getElementById('app').style.display = 'none'
   document.getElementById('country-screen').classList.remove('hidden')
 }
 
@@ -1078,6 +1068,7 @@ if ('serviceWorker' in navigator) {
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 usingSupabase = initSupabase()
+document.getElementById('app').style.display = 'none'
 showCountryScreen()
 // Populate datalist after pubs load
 async function loadAndPopulate(city) {

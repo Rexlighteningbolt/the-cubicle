@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -416,7 +417,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
   </div>
 </div>
 
-<div id="country-screen">
+<div id="country-screen" class="hidden">
   <div class="city-screen-logo">The <span>Cubicle</span></div>
   <div class="city-screen-sub">Pub & Bar Toilet Reviews</div>
 
@@ -1026,15 +1027,14 @@ function onHomeSearch() {
 function goToCity() {
   if (!selectedCity) return
   const country = COUNTRIES[selectedCountry]
+  document.getElementById('app').style.display = ''
   document.getElementById('city-label').textContent = selectedCity
-  document.getElementById('city-screen-sub') && (document.getElementById('city-screen-sub').textContent = country.sub)
-  document.getElementById('s-title') && (document.getElementById('s-title').textContent = country.sub)
+  document.getElementById('city-screen-sub') && (document.getElementById('city-screen-sub').textContent = country ? country.sub : '')
+  document.getElementById('s-title') && (document.getElementById('s-title').textContent = country ? country.sub : '')
   document.getElementById('country-screen').classList.add('hidden')
   document.getElementById('f-city').value = selectedCity
   history.pushState({city: selectedCity}, '', '')
-  
-  // Apply any pre-search
-  const q = document.getElementById('home-search').value.trim()
+  const q = document.getElementById('home-search') ? document.getElementById('home-search').value.trim() : ''
   loadAndPopulate(selectedCity).then(() => {
     if (q) {
       document.getElementById('search-input').value = q
@@ -1044,6 +1044,7 @@ function goToCity() {
 }
 
 function showCountryScreen() {
+  document.getElementById('app').style.display = 'none'
   document.getElementById('country-screen').classList.remove('hidden')
 }
 
@@ -1065,6 +1066,8 @@ if ('serviceWorker' in navigator) {
 
 // ── BOOT ──────────────────────────────────────────────────────────────────────
 usingSupabase = initSupabase()
+document.getElementById("app").style.display = "none"
+showCountryScreen()
 // City screen shows on load — loadPubs called when city selected
 // Populate datalist after pubs load
 async function loadAndPopulate(city) {

@@ -562,10 +562,9 @@ function initSupabase() {
 
 async function loadPubs(city = '') {
   document.getElementById('top-loading').style.display = 'block'
-  document.getElementById('top-loading').querySelector('p').textContent = `Loading pubs...`
   if (usingSupabase && db) {
     try {
-      const { data, error } = await db.from('pubs').select('*').eq('city', city).order('review_count', { ascending: false }).order('score', { ascending: false })
+      const { data, error } = await db.from('pubs').select('*').eq('city', city).order('name', { ascending: true })
       if (error) throw error
       allPubs = data.length > 0 ? data : FALLBACK_PUBS
     } catch(e) {
@@ -989,6 +988,12 @@ const COUNTRIES = {
 let selectedCountry = null
 let selectedCity = null
 
+function goBack() {
+  document.getElementById('screen-submit').style.display = 'none'
+  document.getElementById('app').style.display = ''
+  if (selectedCity) loadPubs(selectedCity)
+}
+
 function onCountryChange() {
   const code = document.getElementById('country-select').value
   const citySelect = document.getElementById('city-select')
@@ -1016,15 +1021,6 @@ function onCountryChange() {
   citySelect.style.borderColor = 'rgba(201,168,76,0.4)'
 }
 
-function goBack() {
-  const reviewScreen = document.getElementById('screen-submit')
-  const appScreen = document.getElementById('app')
-  if (reviewScreen) reviewScreen.style.display = 'none'
-  if (appScreen) appScreen.style.display = ''
-  // Reload current city's pubs
-  if (selectedCity) loadPubs(selectedCity)
-}
-
 function onCityChange() {
   const city = document.getElementById('city-select').value
   const homeSearch = document.getElementById('home-search')
@@ -1036,15 +1032,6 @@ function onCityChange() {
     homeSearch.style.borderColor = 'rgba(201,168,76,0.4)'
     goBtn.disabled = false
     goBtn.style.opacity = '1'
-    
-    // Hide review screen and show pubs list, then load new city
-    const reviewScreen = document.getElementById('screen-submit')
-    const appScreen = document.getElementById('app')
-    if (reviewScreen) reviewScreen.style.display = 'none'
-    if (appScreen) appScreen.style.display = ''
-    
-    // Always load the new city's pubs
-    loadPubs(city)
   } else {
     homeSearch.disabled = true
     homeSearch.style.borderColor = 'rgba(255,255,255,0.1)'

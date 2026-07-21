@@ -902,7 +902,7 @@ async function submitRating() {
       door: sw('t-door'), lock: sw('t-lock'), shelf: sw('t-shelf'),
       paper: sw('t-paper'), hook: sw('t-hook'), clean: sw('t-clean'),
       tagline: review || 'Newly submitted.' })
-    allPubs.sort((a,b) => b.score - a.score)
+    allPubs.sort((a,b) => a.name.localeCompare(b.name))
     renderAll()
     showToast('🚽 Rating submitted!')
   }

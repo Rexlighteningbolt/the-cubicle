@@ -989,11 +989,6 @@ let selectedCountry = null
 let selectedCity = null
 
 function goBack() {
-  document.getElementById('screen-submit').classList.add('hidden')
-  document.getElementById('screen-submit').style.display = 'none'
-  document.getElementById('screen-top').classList.add('active')
-  document.getElementById('screen-top').style.display = ''
-  document.getElementById('app').style.display = ''
   switchTab('top')
   if (selectedCity) loadPubs(selectedCity)
 }

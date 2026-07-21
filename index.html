@@ -1027,14 +1027,14 @@ function onCityChange() {
     goBtn.disabled = false
     goBtn.style.opacity = '1'
     
-    // NEW: If on review page, hide it and load new city
+    // Hide review screen and show pubs list, then load new city
     const reviewScreen = document.getElementById('review-screen')
-    if (reviewScreen && reviewScreen.style.display !== 'none') {
-      reviewScreen.style.display = 'none'
-      const appScreen = document.getElementById('app')
-      if (appScreen) appScreen.style.display = ''
-      loadPubs(city)
-    }
+    const appScreen = document.getElementById('app')
+    if (reviewScreen) reviewScreen.style.display = 'none'
+    if (appScreen) appScreen.style.display = ''
+    
+    // Always load the new city's pubs
+    loadPubs(city)
   } else {
     homeSearch.disabled = true
     homeSearch.style.borderColor = 'rgba(255,255,255,0.1)'

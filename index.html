@@ -33,11 +33,7 @@ const url = URL.createObjectURL(blob);
 const link = document.createElement('link');
 link.rel = 'manifest'; link.href = url;
 document.head.appendChild(link);
-if('serviceWorker' in navigator){
-  const sw = `self.addEventListener('install',e=>e.waitUntil(caches.open('cubicle-v1').then(c=>c.addAll(['/']))));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request))));`;
-  const swBlob = new Blob([sw],{type:'text/javascript'});
-  navigator.serviceWorker.register(URL.createObjectURL(swBlob));
-}
+// ServiceWorker disabled - causes blob: URL error
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">

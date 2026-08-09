@@ -566,7 +566,7 @@ async function loadPubs(city = '') {
   const heroEl = document.getElementById('hero-wrap'); if (heroEl) heroEl.style.display = 'none'
   if (usingSupabase && db) {
     try {
-      const { data, error } = await db.from('pubs').select('*').eq('city', city).order('name', { ascending: true })
+      const { data, error } = await db.from('pubs').select('*').eq('city', city).eq('approved', true).order('name', { ascending: true })
       if (error) throw error
       allPubs = data.length > 0 ? data : FALLBACK_PUBS
     } catch(e) {
@@ -889,7 +889,8 @@ async function submitRating() {
           name: pub, street, city, score, tier,
           door: sw('t-door'), lock: sw('t-lock'), shelf: sw('t-shelf'),
           paper: sw('t-paper'), hook: sw('t-hook'), clean: sw('t-clean'),
-          review_count: 1
+          review_count: 1,
+          approved: false
         }).select().single()
         pubId = newPub?.id
       }

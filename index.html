@@ -386,6 +386,32 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
         </div>
       </div>
       <button class="submit-btn" id="submit-btn" onclick="submitRating()">Submit Rating</button>
+      <button onclick="switchTab('suggest')" style="width:100%; padding:14px; margin-top:14px; background:transparent; border:1px solid rgba(201,168,76,0.3); color:var(--gold); border-radius:10px; cursor:pointer; font-family:Montserrat,sans-serif; font-size:11px; font-weight:600; letter-spacing:0.2em; text-transform:uppercase;">Can't find your pub? Suggest it</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUGGEST A PUB -->
+<div id="screen-suggest" class="screen">
+  <div style="padding: 0 4px;">
+    <button onclick="switchTab('submit')" style="width:100%; padding:14px; margin-bottom:20px; background:transparent; border:1.5px solid rgba(201,168,76,0.6); color:var(--gold); border-radius:12px; cursor:pointer; font-family:Montserrat,sans-serif; font-size:14px; font-weight:600;">← BACK</button>
+    <p style="color:var(--gold); font-family:Montserrat,sans-serif; font-size:11px; letter-spacing:0.25em; text-transform:uppercase; margin-bottom:6px;">Community</p>
+    <h2 style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:34px; color:#fff; margin-bottom:8px;">Suggest a Pub</h2>
+    <p style="color:rgba(255,255,255,0.5); font-size:13px; line-height:1.5; margin-bottom:24px;">Spotted a pub or bar that's missing? Add its details and we'll get it on the list.</p>
+    <div class="submit-form">
+      <div>
+        <label class="f-label">Pub Name *</label>
+        <input class="f-input" id="sg-name" placeholder="The Lamb & Lion">
+      </div>
+      <div>
+        <label class="f-label">Street</label>
+        <input class="f-input" id="sg-street" placeholder="High Petergate">
+      </div>
+      <div>
+        <label class="f-label">City *</label>
+        <input class="f-input" id="sg-city" placeholder="City">
+      </div>
+      <button class="submit-btn" id="suggest-btn" onclick="submitSuggestion()">Send Suggestion</button>
     </div>
   </div>
 </div>
@@ -762,6 +788,13 @@ function autoFillSubmitForm() {
 }
 
 function switchTab(t) {
+  // Hide the standalone suggest screen unless it's the target
+  const sg = document.getElementById('screen-suggest')
+  if (sg) sg.classList.toggle('active', t === 'suggest')
+  if (t === 'suggest') {
+    ['top','nearby','submit'].forEach(s => document.getElementById(`screen-${s}`).classList.remove('active'))
+    return
+  }
   ['top','nearby','submit'].forEach((s,i) => {
     document.getElementById(`screen-${s}`).classList.toggle('active', s===t)
     document.querySelectorAll('.nav-tab')[i].classList.toggle('active', s===t)
@@ -969,6 +1002,39 @@ function sanitiseText(text) {
 function showToast(m) {
   const t = document.getElementById('toast'); t.textContent = m
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2500)
+}
+
+async function submitSuggestion() {
+  const name = document.getElementById('sg-name').value.trim()
+  const street = document.getElementById('sg-street').value.trim()
+  const city = document.getElementById('sg-city').value.trim()
+
+  if (!name || !city) { showToast('Please add at least a pub name and city'); return }
+  if (containsProfanity(name) || containsProfanity(street) || containsProfanity(city)) {
+    showToast('Please remove any inappropriate language'); return
+  }
+
+  const btn = document.getElementById('suggest-btn')
+  btn.disabled = true; btn.textContent = 'Sending…'
+
+  try {
+    if (db) {
+      const { error } = await db.from('suggestions').insert({ name, street, city })
+      if (error) throw error
+    }
+    showToast('🙏 Thanks! We\'ll review your suggestion')
+  } catch(e) {
+    console.warn('Suggestion failed:', e)
+    showToast('Could not send — please try again')
+    btn.disabled = false; btn.textContent = 'Send Suggestion'
+    return
+  }
+
+  document.getElementById('sg-name').value = ''
+  document.getElementById('sg-street').value = ''
+  document.getElementById('sg-city').value = ''
+  btn.disabled = false; btn.textContent = 'Send Suggestion'
+  setTimeout(()=>switchTab('top'), 1200)
 }
 
 function openLightbox(src) {

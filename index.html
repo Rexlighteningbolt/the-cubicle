@@ -274,7 +274,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab('top')">Top</button>
       <button class="nav-tab" onclick="switchTab('nearby')" style="display:none">Nearby</button>
-      <button class="nav-tab" onclick="switchTab('submit')">Submit</button>
+      <button class="nav-tab" onclick="openBlankSubmit()">Submit</button>
     </div>
   </header>
 
@@ -466,7 +466,7 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 <div class="bottom-nav">
   <button class="bnav active" id="bnav-top" onclick="switchTab('top')"><span class="bnav-icon">✦</span><span class="bnav-label">Top</span></button>
   <button class="bnav" id="bnav-nearby" onclick="switchTab('nearby')" style="display:none"><span class="bnav-icon">◎</span><span class="bnav-label">Nearby</span></button>
-  <button class="bnav" id="bnav-submit" onclick="switchTab('submit')"><span class="bnav-icon">+</span><span class="bnav-label">Submit</span></button>
+  <button class="bnav" id="bnav-submit" onclick="openBlankSubmit()"><span class="bnav-icon">+</span><span class="bnav-label">Submit</span></button>
 </div>
 
 <script>
@@ -765,6 +765,27 @@ function switchTab(t) {
   if (t === 'submit') autoFillSubmitForm()
 }
 
+// Opening Submit from the nav should always be a blank form,
+// not pre-filled with the last pub someone tapped "Rate it" on.
+function openBlankSubmit() {
+  currentRatingPub = null
+  clearSubmitForm()
+  switchTab('submit')
+}
+
+function clearSubmitForm() {
+  document.getElementById('f-pub').value = ''
+  document.getElementById('f-street').value = ''
+  document.getElementById('f-city').value = ''
+  const rev = document.getElementById('f-review'); if (rev) rev.value = ''
+  document.querySelectorAll('.poop-btn').forEach(b=>b.classList.remove('active'))
+  document.querySelectorAll('.t-switch').forEach(b=>b.classList.remove('on'))
+  document.querySelectorAll('.photo-slot-upload img').forEach(img=>img.remove())
+  document.querySelectorAll('.photo-slot-upload').forEach(s=>{s.style.borderStyle='';s.style.borderColor=''})
+  Object.keys(photoFiles).forEach(k=>delete photoFiles[k])
+  poopScore = 0
+}
+
 // ── SUBMIT FORM ───────────────────────────────────────────────────────────────
 let poopScore = 0
 const photoFiles = {}
@@ -906,15 +927,8 @@ async function submitRating() {
 
   // Reset form
   btn.disabled = false; btn.textContent = 'Submit Rating'
-  document.getElementById('f-pub').value = ''
-  document.getElementById('f-street').value = ''
-  document.getElementById('f-review').value = ''
-  document.querySelectorAll('.poop-btn').forEach(b=>b.classList.remove('active'))
-  document.querySelectorAll('.t-switch').forEach(b=>b.classList.remove('on'))
-  document.querySelectorAll('.photo-slot-upload img').forEach(img=>img.remove())
-  document.querySelectorAll('.photo-slot-upload').forEach(s=>{s.style.borderStyle='';s.style.borderColor=''})
-  Object.keys(photoFiles).forEach(k=>delete photoFiles[k])
-  poopScore = 0
+  currentRatingPub = null
+  clearSubmitForm()
 
   setTimeout(()=>switchTab('top'), 1200)
 }

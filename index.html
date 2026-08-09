@@ -559,6 +559,11 @@ function initSupabase() {
 
 async function loadPubs(city = '') {
   document.getElementById('top-loading').style.display = 'block'
+  // Clear the previous city's pubs immediately so they don't flash
+  // underneath while the new city's data is still loading.
+  allPubs = []
+  const listEl = document.getElementById('pub-list'); if (listEl) listEl.innerHTML = ''
+  const heroEl = document.getElementById('hero-wrap'); if (heroEl) heroEl.style.display = 'none'
   if (usingSupabase && db) {
     try {
       const { data, error } = await db.from('pubs').select('*').eq('city', city).order('name', { ascending: true })

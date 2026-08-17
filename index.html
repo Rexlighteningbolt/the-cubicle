@@ -1222,6 +1222,11 @@ function goToCity() {
   document.getElementById('s-title') && (document.getElementById('s-title').textContent = country ? country.sub : '')
   document.getElementById('country-screen').classList.add('hidden')
   document.getElementById('f-city').value = selectedCity
+  // Clear any leftover "near me" results and show the Top tab
+  nearbyResults = []
+  const nl = document.getElementById('nearby-list'); if (nl) nl.innerHTML = ''
+  const nh = document.getElementById('nearby-hero'); if (nh) nh.style.display = ''
+  switchTab('top')
   history.pushState({city: selectedCity}, '', '')
   const q = document.getElementById('home-search') ? document.getElementById('home-search').value.trim() : ''
   loadAndPopulate(selectedCity).then(() => {

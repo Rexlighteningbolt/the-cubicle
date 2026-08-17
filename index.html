@@ -295,11 +295,12 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
 
   <!-- NEARBY -->
   <div id="screen-nearby" class="screen">
+    <button onclick="document.getElementById('app').style.display='none';document.getElementById('country-screen').classList.remove('hidden')" style="width:100%;padding:14px;margin-bottom:20px;background:transparent;border:1.5px solid rgba(201,168,76,0.6);color:var(--gold);border-radius:12px;cursor:pointer;font-family:Montserrat,sans-serif;font-size:14px;font-weight:600;">← BACK</button>
     <div class="s-eyebrow">Location</div>
-    <div class="s-title">Near You</div>
+    <div class="s-title">Pubs Near You</div>
     <div class="nearby-hero" id="nearby-hero">
-      <p>Share your location and we'll show the <strong>nearest rated cubicles</strong>, sorted by distance and quality.</p>
-      <button class="locate-btn" onclick="locateMe()">Locate Me</button>
+      <p>Share your location and we'll show the <strong>nearest pubs</strong>, sorted by distance.</p>
+      <button class="locate-btn" onclick="findPubsNearMe()">Locate Me</button>
     </div>
     <div class="pub-list" id="nearby-list"></div>
   </div>
@@ -477,6 +478,12 @@ header { padding: 28px 20px 0; position: sticky; top: 0; z-index: 100; backgroun
     <button id="go-btn" onclick="goToCity()" disabled
       style="width:100%;padding:16px;background:var(--gold);border:none;border-radius:12px;color:#08080a;font-family:Montserrat,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;opacity:0.4;transition:opacity 0.2s">
       View Pubs →
+    </button>
+
+    <!-- Near me button -->
+    <button id="nearme-btn" onclick="findPubsNearMe()"
+      style="width:100%;padding:16px;background:transparent;border:1.5px solid rgba(201,168,76,0.5);border-radius:12px;color:var(--gold);font-family:Montserrat,sans-serif;font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.2s">
+      📍 Find a pub near me
     </button>
 
   </div>
@@ -765,18 +772,90 @@ function filterPubs() {
 }
 
 // ── NEARBY ────────────────────────────────────────────────────────────────────
-function locateMe() {
-  if (!navigator.geolocation) { showToast('Location not supported'); return }
-  navigator.geolocation.getCurrentPosition(pos => {
-    const { latitude, longitude } = pos.coords
-    document.getElementById('nearby-hero').style.display = 'none'
-    // In full version: sort by distance using lat/lng stored in DB
-    // For now: show shuffled as demo
-    const near = [...allPubs].sort(()=>Math.random()-0.5).slice(0,6)
-    renderList(near, 'nearby-list', 1)
-    showToast('📍 Showing nearest cubicles')
-  }, () => showToast('Could not get location'))
+// Haversine distance in miles between two lat/lng points
+function distanceMiles(lat1, lng1, lat2, lng2) {
+  const R = 3959 // Earth radius in miles
+  const dLat = (lat2-lat1) * Math.PI/180
+  const dLng = (lng2-lng1) * Math.PI/180
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
 }
+
+function walkTime(miles) {
+  const mins = Math.round(miles / 3 * 60) // ~3 mph walking
+  return mins < 1 ? '1 min walk' : `${mins} min walk`
+}
+
+async function findPubsNearMe() {
+  const btn = document.getElementById('nearme-btn')
+  if (!navigator.geolocation) { showToast('Location not supported on this device'); return }
+  btn.textContent = '📍 Finding you...'; btn.disabled = true
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const { latitude, longitude } = pos.coords
+    try {
+      // Pull only pubs that have coordinates
+      const { data, error } = await db.from('pubs')
+        .select('*')
+        .eq('approved', true)
+        .not('latitude','is',null)
+        .not('longitude','is',null)
+      if (error) throw error
+
+      if (!data || data.length === 0) {
+        showToast('No mapped pubs yet — try browsing by city')
+        btn.textContent = '📍 Find a pub near me'; btn.disabled = false
+        return
+      }
+
+      // Calculate distance for each, sort nearest first
+      const withDist = data.map(p => ({...p, _dist: distanceMiles(latitude, longitude, p.latitude, p.longitude)}))
+                           .sort((a,b) => a._dist - b._dist)
+                           .slice(0, 20)
+
+      nearbyResults = withDist
+      // Reveal the app and show the nearby screen
+      document.getElementById('app').style.display = ''
+      document.getElementById('country-screen').classList.add('hidden')
+      document.getElementById('city-label').textContent = 'Near You'
+      renderNearby(withDist)
+      switchTab('nearby')
+    } catch(e) {
+      console.warn('Near me failed:', e)
+      showToast('Something went wrong — please try again')
+    }
+    btn.textContent = '📍 Find a pub near me'; btn.disabled = false
+  }, err => {
+    if (err.code === 1) showToast('Location blocked — enable it in your browser settings')
+    else showToast('Could not get your location')
+    btn.textContent = '📍 Find a pub near me'; btn.disabled = false
+  }, { enableHighAccuracy: true, timeout: 10000 })
+}
+
+let nearbyResults = []
+
+function renderNearby(pubs) {
+  const hero = document.getElementById('nearby-hero')
+  if (hero) hero.style.display = 'none'
+  const c = document.getElementById('nearby-list'); c.innerHTML = ''
+  pubs.forEach(p => {
+    const isRated = p.score !== null && p.review_count > 0
+    const miles = p._dist.toFixed(1)
+    const dirUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}`
+    const el = document.createElement('div')
+    el.className = `pub-card ${isRated ? (p.tier||'decent') : 'decent'}`
+    el.innerHTML = `
+      <div style="flex:1">
+        <div style="font-weight:700;color:var(--cream);font-size:15px;margin-bottom:2px">${p.name}</div>
+        <div style="font-size:12px;color:var(--dim);margin-bottom:4px">${[p.street,p.city].filter(Boolean).join(' · ')}</div>
+        <div style="font-size:12px;color:var(--gold2);margin-bottom:6px">${miles} miles · ${walkTime(p._dist)}${isRated ? ` · ⭐ ${p.score}` : ' · 🆕 Not yet rated'}</div>
+        <a href="${dirUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);text-decoration:none;border:1px solid rgba(201,168,76,0.4);border-radius:8px;padding:6px 12px">Get Directions →</a>
+      </div>`
+    el.onclick = () => openDetail(p)
+    c.appendChild(el)
+  })
+}
+
 
 // ── TABS ──────────────────────────────────────────────────────────────────────
 function autoFillSubmitForm() {
